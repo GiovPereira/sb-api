@@ -14,7 +14,7 @@ import javax.persistence.*;
 public class Emprestimo
 {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long Id;
 
     private Data dataEmprestimo;

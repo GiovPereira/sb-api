@@ -1,9 +1,6 @@
 package br.edu.ifsudestemg.sb.model.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,6 +19,7 @@ public class Cliente {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne
     private String nome;
     private Integer cpf; //USAR INT MESMO OU PASSAR PARA STRING
     private LocalDate dataNascimento;

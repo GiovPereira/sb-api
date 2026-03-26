@@ -13,8 +13,8 @@ import lombok.NoArgsConstructor;
 public class Reserva
 {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO.IDENTITY)
-    private Long Id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     private Data dataReserva;
     private int posicaoFila;

@@ -1,9 +1,6 @@
 package br.edu.ifsudestemg.sb.model.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,6 +17,7 @@ public class Multa {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne
     private Long idEmprestimo;
     private Long idValorDiarioMulta;
     private Float valor;

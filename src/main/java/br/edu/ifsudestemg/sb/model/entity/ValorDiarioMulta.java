@@ -2,22 +2,23 @@ package br.edu.ifsudestemg.sb.model.entity;
 
 import javax.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import java.time.LocalDateTime;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 
 public class ValorDiarioMulta
 {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO.IDENTITY)
-    private Long Id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     private Float valorDia;
-    private Data dataHoraAlteracao;
+    private LocalDateTime dataHoraAlteracao;
 
     @ManyToOne
     private StatusReserva status;

@@ -17,8 +17,8 @@ import javax.persistence.Id;
 public class Secao
 {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO.IDENTITY)
-    private Long Id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     private String nome;
 
