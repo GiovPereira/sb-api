@@ -1,9 +1,7 @@
 package br.edu.ifsudestemg.sb.model.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,4 +18,6 @@ public class StatusExemplar {
     private Long id;
 
     private String Nome;
+    @ManyToOne
+    private Exemplar exemplar;
 }

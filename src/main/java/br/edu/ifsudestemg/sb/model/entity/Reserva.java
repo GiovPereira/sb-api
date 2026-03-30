@@ -23,5 +23,6 @@ public class Reserva
     private Cliente cliente;
     private Obra obra;
     private StatusReserva status;
+    private Exemplar exemplar;
 
 }

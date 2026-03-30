@@ -18,6 +18,7 @@ public class Idioma
     private Long Id;
 
     @ManyToOne
-    private String nome;
+    private Obra obra;
+    private Exemplar exemplar;
 
 }

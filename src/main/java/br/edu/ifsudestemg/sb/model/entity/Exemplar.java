@@ -24,4 +24,5 @@ public class Exemplar {
     private Long idStatus;
     private Long idSecao;
     private LocalDate dataAquisicao;
+    private Obra obra;
 }

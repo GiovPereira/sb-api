@@ -15,22 +15,9 @@ import java.time.LocalDate;
 
 public class Cliente {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @ManyToOne
-    private String nome;
-    private Integer cpf; //USAR INT MESMO OU PASSAR PARA STRING
-    private LocalDate dataNascimento;
-    private String email;
-    private Integer telefone; //USAR INT MESMO OU PASSAR PARA STRING
-    private Integer cep; //USAR INT MESMO OU PASSAR PARA STRING
-    private String logradouro;
-    private Integer numero; //USAR INT MESMO OU PASSAR PARA STRING
-    private String complemento;
-    private String bairro;
-    private String cidade;
-    private String estado;
+    private Obra obra;
 
+    @ManyToMany
+    private Exemplar exemplar;
 }

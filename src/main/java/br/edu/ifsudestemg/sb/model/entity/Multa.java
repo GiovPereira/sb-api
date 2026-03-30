@@ -21,4 +21,5 @@ public class Multa {
     private Long idEmprestimo;
     private Long idValorDiarioMulta;
     private Float valor;
+    private Exemplar exemplar;
 }

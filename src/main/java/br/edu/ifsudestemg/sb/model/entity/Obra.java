@@ -23,6 +23,7 @@ public class Obra {
     private Long idGenero;
     private Long idIdioma;
     private String titulo;
-    private String isbn; //USAR INTEGER MESMO OU PASSAR PARA STRING
-    private String edicao; //USAR INTEGER MESMO OU PASSAR PARA STRING
+    private String isbn;
+    private String edicao;
+    private Exemplar exemplar;
 }
