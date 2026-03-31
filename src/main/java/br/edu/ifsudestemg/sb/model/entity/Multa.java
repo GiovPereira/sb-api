@@ -21,6 +21,7 @@ public class Multa {
 
     @ManyToOne
     private Emprestimo emprestimo;
+
     @ManyToOne
     private ValorDiarioMulta valorDiarioMulta;
 }
