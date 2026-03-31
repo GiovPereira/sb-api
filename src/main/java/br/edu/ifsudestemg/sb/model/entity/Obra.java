@@ -23,10 +23,13 @@ public class Obra {
 
     @ManyToOne
     private Autor autor;
+
     @ManyToOne
     private Editora editora;
+
     @ManyToOne
     private Genero genero;
+
     @ManyToOne
     private Idioma idioma;
 }

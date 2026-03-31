@@ -23,10 +23,13 @@ public class Reserva
 
     @ManyToOne
     private Cliente cliente;
+
     @ManyToOne
     private Obra obra;
+
     @ManyToOne
     private Exemplar exemplar;
+
     @ManyToOne
     private StatusReserva status;
 

@@ -24,8 +24,10 @@ public class Emprestimo
 
     @ManyToOne
     private Cliente cliente;
+
     @ManyToOne
     private Exemplar exemplar;
+
     @ManyToOne
     private DuracaoPadraoEmprestimo duracaoPadraoEmprestimo;
 }

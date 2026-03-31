@@ -23,8 +23,10 @@ public class Exemplar {
 
     @ManyToOne
     private Obra obra;
+
     @ManyToOne
     private StatusExemplar statusExemplar;
+
     @ManyToOne
     private Secao secao;
 }
