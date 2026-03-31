@@ -20,8 +20,4 @@ public class Editora {
     private Long id;
 
     private String Nome;
-
-    @ManyToOne
-    private Obra obra;
-    private List<Obra> obras;
 }

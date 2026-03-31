@@ -19,7 +19,4 @@ public class ValorDiarioMulta
 
     private Float valorDia;
     private LocalDateTime dataHoraAlteracao;
-
-    @ManyToOne
-    private StatusReserva status;
 }

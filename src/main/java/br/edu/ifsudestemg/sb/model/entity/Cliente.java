@@ -15,9 +15,23 @@ import java.time.LocalDate;
 
 public class Cliente {
 
-    @ManyToOne
-    private Obra obra;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @ManyToMany
-    private Exemplar exemplar;
+    private String nome;
+    private Integer cpf;
+    private LocalDate dataNascimento;
+    private String email;
+    private Integer telefone;
+    private Integer cep;
+    private String logradouro;
+    private Integer numero;
+    private String complemento;
+    private String bairro;
+    private String cidade;
+    private String estado;
+
+//    @ManyToMany
+//    private Exemplar exemplar;
 }

@@ -17,8 +17,5 @@ public class Idioma
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long Id;
 
-    @ManyToOne
-    private Obra obra;
-    private Exemplar exemplar;
-
+    private String nome;
 }

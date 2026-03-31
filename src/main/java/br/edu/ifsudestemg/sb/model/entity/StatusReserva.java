@@ -18,8 +18,4 @@ public class StatusReserva {
     private Long id;
 
     private String Nome;
-
-    @ManyToOne
-    private Exemplar exemplar;
-    private Reserva reserva;
 }

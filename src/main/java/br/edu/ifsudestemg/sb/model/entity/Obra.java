@@ -17,13 +17,16 @@ public class Obra {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    private Long idAutor;
-    private Long idEditora;
-    private Long idGenero;
-    private Long idIdioma;
     private String titulo;
     private String isbn;
     private String edicao;
-    private Exemplar exemplar;
+
+    @ManyToOne
+    private Autor autor;
+    @ManyToOne
+    private Editora editora;
+    @ManyToOne
+    private Genero genero;
+    @ManyToOne
+    private Idioma idioma;
 }

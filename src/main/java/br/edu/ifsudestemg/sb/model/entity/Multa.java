@@ -17,9 +17,10 @@ public class Multa {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    private Long idEmprestimo;
-    private Long idValorDiarioMulta;
     private Float valor;
-    private Exemplar exemplar;
+
+    @ManyToOne
+    private Emprestimo emprestimo;
+    @ManyToOne
+    private ValorDiarioMulta valorDiarioMulta;
 }

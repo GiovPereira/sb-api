@@ -23,6 +23,6 @@ public class Autor {
     @ManyToOne
     private Obra obra;
 
-    @ManyToMany(mappedBy = "autores")
-    private List<Obra> obras;
+//    @ManyToMany(mappedBy = "autores")
+//    private List<Obra> obras;
 }

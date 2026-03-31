@@ -18,6 +18,4 @@ public class StatusExemplar {
     private Long id;
 
     private String Nome;
-    @ManyToOne
-    private Exemplar exemplar;
 }

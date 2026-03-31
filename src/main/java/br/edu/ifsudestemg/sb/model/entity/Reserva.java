@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Entity
 @Data
 @NoArgsConstructor
@@ -16,13 +18,16 @@ public class Reserva
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Data dataReserva;
+    private LocalDate dataReserva;
     private int posicaoFila;
 
     @ManyToOne
     private Cliente cliente;
+    @ManyToOne
     private Obra obra;
-    private StatusReserva status;
+    @ManyToOne
     private Exemplar exemplar;
+    @ManyToOne
+    private StatusReserva status;
 
 }

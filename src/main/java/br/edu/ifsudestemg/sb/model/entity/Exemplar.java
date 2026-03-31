@@ -19,10 +19,12 @@ public class Exemplar {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    private Long idObra;
-    private Long idStatus;
-    private Long idSecao;
     private LocalDate dataAquisicao;
+
+    @ManyToOne
     private Obra obra;
+    @ManyToOne
+    private StatusExemplar statusExemplar;
+    @ManyToOne
+    private Secao secao;
 }

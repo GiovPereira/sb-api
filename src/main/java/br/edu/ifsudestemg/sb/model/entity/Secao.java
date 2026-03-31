@@ -19,7 +19,4 @@ public class Secao
 
     private String nome;
 
-    @ManyToOne
-    private Exemplar exemplar;
-
 }

@@ -19,6 +19,6 @@ public class Genero {
 
     private String Nome;
 
-    @ManyToMany
-    private Obra obra;
+//    @ManyToMany
+//    private Obra obra;
 }
