@@ -1,25 +1,25 @@
 package br.edu.ifsudestemg.sb.service;
 
 import br.edu.ifsudestemg.sb.model.entity.Autor;
-import br.edu.ifsudestemg.sb.model.entity.Multa;
+import br.edu.ifsudestemg.sb.model.entity.Cliente;
 import br.edu.ifsudestemg.sb.model.repository.AutorRepository;
-import br.edu.ifsudestemg.sb.model.repository.MultaRepository;
+import br.edu.ifsudestemg.sb.model.repository.ClienteRepository;
 
 import java.util.List;
 import java.util.Optional;
 
-public class MultaService {
-    private MultaRepository repository;
+public class AutorService {
+    private AutorRepository repository;
 
-    public MultaService(MultaRepository repository) {
+    public AutorService(AutorRepository repository) {
         this.repository = repository;
     }
 
-    public List<Multa> getMultas() {
+    public List<Autor> getAutores() {
         return repository.findAll();
     }
 
-    public Optional<Multa> getMultaById(Long id) {
+    public Optional<Autor> getAutorById(Long id) {
         return repository.findById(id);
     }
 }
