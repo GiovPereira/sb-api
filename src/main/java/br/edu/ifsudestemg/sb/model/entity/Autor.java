@@ -6,8 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Entity
 @Data
 @NoArgsConstructor
@@ -19,10 +17,4 @@ public class Autor {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String Nome;
-
-    @ManyToOne
-    private Obra obra;
-
-//    @ManyToMany(mappedBy = "autores")
-//    private List<Obra> obras;
 }

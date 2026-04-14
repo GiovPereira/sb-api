@@ -18,7 +18,4 @@ public class Genero {
     private Long id;
 
     private String Nome;
-
-//    @ManyToMany
-//    private Obra obra;
 }

@@ -32,6 +32,4 @@ public class Cliente {
     private String cidade;
     private String estado;
 
-//    @ManyToMany
-//    private Exemplar exemplar;
 }

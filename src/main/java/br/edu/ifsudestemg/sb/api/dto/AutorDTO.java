@@ -1,10 +1,10 @@
 package br.edu.ifsudestemg.sb.api.dto;
 
+import br.edu.ifsudestemg.sb.model.entity.Autor;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
+import org.modelmapper.ModelMapper;
 
 @Data
 @NoArgsConstructor
@@ -13,5 +13,10 @@ import java.util.List;
 public class AutorDTO {
     private Long id;
     private String nome;
-    private Long idObra;
+
+    public static AutorDTO create(Autor autor) {
+        ModelMapper modelMapper = new ModelMapper();
+        AutorDTO dto = modelMapper.map(autor, AutorDTO.class);
+        return dto;
+    }
 }

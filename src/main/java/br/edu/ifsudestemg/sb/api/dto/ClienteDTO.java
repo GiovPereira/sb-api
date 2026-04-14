@@ -1,13 +1,14 @@
 package br.edu.ifsudestemg.sb.api.dto;
 
+import br.edu.ifsudestemg.sb.model.entity.Cliente;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.modelmapper.ModelMapper;
 
 import javax.persistence.Entity;
 import java.time.LocalDate;
 
-@Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -28,4 +29,9 @@ public class ClienteDTO {
     private String cidade;
     private String estado;
 
+    public static ClienteDTO create(Cliente cliente) {
+        ModelMapper modelMapper = new ModelMapper();
+        ClienteDTO dto = modelMapper.map(cliente, ClienteDTO.class);
+        return dto;
+    }
 }
