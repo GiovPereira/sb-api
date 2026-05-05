@@ -20,11 +20,11 @@ public class Cliente {
     private Long id;
 
     private String nome;
-    private Integer cpf;
+    private String cpf;
     private LocalDate dataNascimento;
     private String email;
-    private Integer telefone;
-    private Integer cep;
+    private String telefone;
+    private String cep;
     private String logradouro;
     private Integer numero;
     private String complemento;

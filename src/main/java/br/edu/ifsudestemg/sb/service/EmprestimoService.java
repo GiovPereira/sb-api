@@ -17,7 +17,7 @@ public class EmprestimoService {
         return repository.findAll();
     }
 
-    public Optional<Emprestimo> getAlunoById(Long id) {
+    public Optional<Emprestimo> getEmprestimoById(Long id) {
         return repository.findById(id);
     }
 }

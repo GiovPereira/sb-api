@@ -19,7 +19,7 @@ public class ExemplarService {
         return repository.findAll();
     }
 
-    public Optional<Exemplar> getGeneroById(Long id) {
+    public Optional<Exemplar> getExemplarById(Long id) {
         return repository.findById(id);
     }
 }

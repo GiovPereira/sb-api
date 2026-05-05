@@ -20,7 +20,9 @@ public class Emprestimo
     private Long Id;
 
     private LocalDate dataEmprestimo;
+    private LocalDate dataPrevistaDevolucao;
     private LocalDate dataEntrega;
+    private Float multa;
 
     @ManyToOne
     private Cliente cliente;
@@ -30,4 +32,7 @@ public class Emprestimo
 
     @ManyToOne
     private DuracaoPadraoEmprestimo duracaoPadraoEmprestimo;
+
+    @ManyToOne
+    private ValorDiarioMulta valorDiarioMulta;
 }

@@ -17,10 +17,13 @@ import java.time.LocalDate;
 public class EmprestimoDTO {
     private Long Id;
     private LocalDate dataEmprestimo;
+    private LocalDate dataPrevistaDevolucao;
     private LocalDate dataEntrega;
+    private Float multa;
     private Long idCliente;
     private Long idExemplar;
     private Long idDuracaoPadraoEmprestimo;
+    private Long idValorDiarioMulta;
 
     public static EmprestimoDTO create(Emprestimo emprestimo) {
         ModelMapper modelMapper = new ModelMapper();

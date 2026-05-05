@@ -11,15 +11,17 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 
-public class AutorObra {
+public class ObraGenero
+{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @ManyToOne
-    private Autor autor;
+    private String Nome;
 
     @ManyToOne
     private Obra obra;
+
+    @ManyToOne
+    private Genero genero;
 }
