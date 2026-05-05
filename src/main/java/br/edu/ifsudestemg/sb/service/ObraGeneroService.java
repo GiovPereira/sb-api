@@ -1,6 +1,7 @@
 package br.edu.ifsudestemg.sb.service;
 
-import br.edu.ifsudestemg.sb.model.entity.ObraGenero;
+import br.edu.ifsudestemg.sb.exception.RegraNegocioException;
+import br.edu.ifsudestemg.sb.model.entity.*;
 import br.edu.ifsudestemg.sb.model.repository.ObraGeneroRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -8,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-
 @Service
 public class ObraGeneroService
 {

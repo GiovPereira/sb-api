@@ -1,11 +1,13 @@
 package br.edu.ifsudestemg.sb.service;
 
-import br.edu.ifsudestemg.sb.model.entity.Genero;
-import br.edu.ifsudestemg.sb.model.entity.Idioma;
+import br.edu.ifsudestemg.sb.exception.RegraNegocioException;
+import br.edu.ifsudestemg.sb.model.entity.*;
 import br.edu.ifsudestemg.sb.model.repository.GeneroRepository;
-import br.edu.ifsudestemg.sb.model.repository.IdiomaRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class GeneroService {

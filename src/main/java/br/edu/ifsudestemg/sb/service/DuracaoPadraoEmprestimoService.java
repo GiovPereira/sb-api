@@ -1,10 +1,9 @@
 package br.edu.ifsudestemg.sb.service;
 
 import br.edu.ifsudestemg.sb.exception.RegraNegocioException;
-import br.edu.ifsudestemg.sb.model.entity.DuracaoPadraoEmprestimo;
-import br.edu.ifsudestemg.sb.model.entity.Editora;
+import br.edu.ifsudestemg.sb.model.entity.*;
 import br.edu.ifsudestemg.sb.model.repository.DuracaoPadraoEmprestimoRepository;
-import br.edu.ifsudestemg.sb.model.repository.EditoraRepository;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
