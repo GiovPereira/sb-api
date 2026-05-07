@@ -1,6 +1,5 @@
 package br.edu.ifsudestemg.sb.service;
 
-import br.edu.ifsudestemg.sb.model.entity.Secao;
 import br.edu.ifsudestemg.sb.model.entity.StatusExemplar;
 import br.edu.ifsudestemg.sb.model.repository.StatusExemplarRepository;
 import org.springframework.stereotype.Service;
@@ -11,42 +10,55 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Service
-public class StatusExemplarService
-{
+public class StatusExemplarService {
 
-    private StatusExemplarRepository repository;
+    private final StatusExemplarRepository repository;
 
     public StatusExemplarService(StatusExemplarRepository repository) {
         this.repository = repository;
     }
 
-    public List<StatusExemplar> getStatusExemplares() {
+    public List<StatusExemplar> listarTodos() {
         return repository.findAll();
     }
 
-    public Optional<StatusExemplar> getStatusExemplarById(Long id) {
+    public Optional<StatusExemplar> buscarPorId(Long id) {
         return repository.findById(id);
     }
 
     @Transactional
-    public StatusExemplar salvar(StatusExemplar StatusExemplar) {
-        validar(StatusExemplar);
-        return repository.save(StatusExemplar);
+    public StatusExemplar salvar(StatusExemplar statusExemplar) {
+        validar(statusExemplar);
+
+        String nomeNormalizado = statusExemplar.getNome().trim().toUpperCase();
+        statusExemplar.setNome(nomeNormalizado);
+
+        if (repository.existsByNomeIgnoreCase(nomeNormalizado)) {
+            throw new RuntimeException("Já existe um status com esse nome");
+        }
+
+        return repository.save(statusExemplar);
     }
 
     @Transactional
-    public void excluir(StatusExemplar StatusExemplar) {
-        Objects.requireNonNull(StatusExemplar.getId());
-        repository.delete(StatusExemplar);
+    public void excluir(StatusExemplar statusExemplar) {
+
+        Objects.requireNonNull(statusExemplar.getId(), "ID não pode ser nulo");
+        repository.delete(statusExemplar);
     }
 
-    public void validar(StatusExemplar StatusExemplar) {
+    private void validar(StatusExemplar statusExemplar) {
 
-//        if (StatusExemplar.getNome() == null || StatusExemplar.getNome().trim().equals("")) {
-//            throw new RegraNegocioException("Nome inválido");
-//        }
-//        if (StatusExemplar.getCurso() == null || StatusExemplar.getCurso().getId() == null || StatusExemplar.getCurso().getId() == 0) {
-//            throw new RegraNegocioException("Curso inválido");
-//        }
+        if (statusExemplar == null) {
+            throw new RuntimeException("StatusExemplar não pode ser nulo");
+        }
+
+        if (statusExemplar.getNome() == null || statusExemplar.getNome().trim().isEmpty()) {
+            throw new RuntimeException("Nome é obrigatório");
+        }
+
+        if (statusExemplar.getNome().length() > 50) {
+            throw new RuntimeException("Nome muito longo");
+        }
     }
 }

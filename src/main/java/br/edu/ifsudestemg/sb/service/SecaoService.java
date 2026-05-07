@@ -1,7 +1,5 @@
 package br.edu.ifsudestemg.sb.service;
 
-import br.edu.ifsudestemg.sb.model.entity.Multa;
-import br.edu.ifsudestemg.sb.model.entity.Reserva;
 import br.edu.ifsudestemg.sb.model.entity.Secao;
 import br.edu.ifsudestemg.sb.model.repository.SecaoRepository;
 import org.springframework.stereotype.Service;
@@ -12,42 +10,55 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Service
-public class SecaoService
-{
+public class SecaoService {
 
-    private SecaoRepository repository;
+    private final SecaoRepository repository;
 
     public SecaoService(SecaoRepository repository) {
         this.repository = repository;
     }
 
-    public List<Secao> getSecoes() {
+    public List<Secao> listarTodos() {
         return repository.findAll();
     }
 
-    public Optional<Secao> getSecaoById(Long id) {
+    public Optional<Secao> buscarPorId(Long id) {
         return repository.findById(id);
     }
 
     @Transactional
-    public Secao salvar(Secao Secao) {
-        validar(Secao);
-        return repository.save(Secao);
+    public Secao salvar(Secao secao) {
+        validar(secao);
+
+        String nomeNormalizado = secao.getNome().trim().toUpperCase();
+        secao.setNome(nomeNormalizado);
+
+        if (repository.existsByNomeIgnoreCase(nomeNormalizado)) {
+            throw new RuntimeException("Já existe uma seção com esse nome");
+        }
+
+        return repository.save(secao);
     }
 
     @Transactional
-    public void excluir(Secao Secao) {
-        Objects.requireNonNull(Secao.getId());
-        repository.delete(Secao);
+    public void excluir(Secao secao) {
+
+        Objects.requireNonNull(secao.getId(), "ID não pode ser nulo");
+        repository.delete(secao);
     }
 
-    public void validar(Secao Secao) {
+    private void validar(Secao secao) {
 
-//        if (Secao.getNome() == null || Secao.getNome().trim().equals("")) {
-//            throw new RegraNegocioException("Nome inválido");
-//        }
-//        if (Secao.getCurso() == null || Secao.getCurso().getId() == null || Secao.getCurso().getId() == 0) {
-//            throw new RegraNegocioException("Curso inválido");
-//        }
+        if (secao == null) {
+            throw new RuntimeException("Seção não pode ser nula");
+        }
+
+        if (secao.getNome() == null || secao.getNome().trim().isEmpty()) {
+            throw new RuntimeException("Nome é obrigatório");
+        }
+
+        if (secao.getNome().length() > 100) {
+            throw new RuntimeException("Nome muito longo");
+        }
     }
 }
