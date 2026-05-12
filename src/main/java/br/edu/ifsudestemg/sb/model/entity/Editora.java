@@ -1,23 +1,25 @@
 package br.edu.ifsudestemg.sb.model.entity;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.persistence.*;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.util.List;
-
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
-@AllArgsConstructor
-
 public class Editora {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String Nome;
+    @Column(nullable = false, unique = true, length = 100)
+    private String nome;
+
+    public Editora(String nome) {
+        this.nome = nome;
+    }
 }

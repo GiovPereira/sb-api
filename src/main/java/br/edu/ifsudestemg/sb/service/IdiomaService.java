@@ -1,6 +1,7 @@
 package br.edu.ifsudestemg.sb.service;
 
 import br.edu.ifsudestemg.sb.model.entity.Idioma;
+import br.edu.ifsudestemg.sb.exception.RegraNegocioException;
 import br.edu.ifsudestemg.sb.model.repository.IdiomaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,29 +13,33 @@ import java.util.Optional;
 @Service
 public class IdiomaService {
 
-    private final IdiomaRepository repository;
+    private IdiomaRepository repository;
 
     public IdiomaService(IdiomaRepository repository) {
         this.repository = repository;
     }
 
-    public List<Idioma> listarTodos() {
+    public List<Idioma> getIdiomas() {
         return repository.findAll();
     }
 
-    public Optional<Idioma> buscarPorId(Long id) {
+    public Optional<Idioma> getIdiomaById(Long id) {
         return repository.findById(id);
     }
 
     @Transactional
     public Idioma salvar(Idioma idioma) {
+
         validar(idioma);
 
-        String nomeNormalizado = idioma.getNome().trim().toUpperCase();
+        String nomeNormalizado =
+                idioma.getNome().trim().toUpperCase();
+
         idioma.setNome(nomeNormalizado);
 
         if (repository.existsByNomeIgnoreCase(nomeNormalizado)) {
-            throw new RuntimeException("Já existe um idioma com esse nome");
+            throw new RegraNegocioException(
+                    "Já existe um idioma com esse nome");
         }
 
         return repository.save(idioma);
@@ -42,23 +47,24 @@ public class IdiomaService {
 
     @Transactional
     public void excluir(Idioma idioma) {
-
-        Objects.requireNonNull(idioma.getId(), "ID não pode ser nulo");
+        Objects.requireNonNull(idioma.getId());
         repository.delete(idioma);
     }
 
-    private void validar(Idioma idioma) {
+    public void validar(Idioma idioma) {
 
         if (idioma == null) {
-            throw new RuntimeException("Idioma não pode ser nulo");
+            throw new RegraNegocioException("Idioma inválido");
         }
 
-        if (idioma.getNome() == null || idioma.getNome().trim().isEmpty()) {
-            throw new RuntimeException("Nome é obrigatório");
+        if (idioma.getNome() == null ||
+                idioma.getNome().trim().equals("")) {
+
+            throw new RegraNegocioException("Nome inválido");
         }
 
         if (idioma.getNome().length() > 50) {
-            throw new RuntimeException("Nome muito longo");
+            throw new RegraNegocioException("Nome inválido");
         }
     }
 }

@@ -1,6 +1,6 @@
 package br.edu.ifsudestemg.sb.service;
 
-import br.edu.ifsudestemg.sb.model.entity.Obra;
+import br.edu.ifsudestemg.sb.exception.RegraNegocioException;
 import br.edu.ifsudestemg.sb.model.entity.Reserva;
 import br.edu.ifsudestemg.sb.model.repository.ReservaRepository;
 import org.springframework.stereotype.Service;
@@ -14,22 +14,23 @@ import java.util.Optional;
 @Service
 public class ReservaService {
 
-    private final ReservaRepository repository;
+    private ReservaRepository repository;
 
     public ReservaService(ReservaRepository repository) {
         this.repository = repository;
     }
 
-    public List<Reserva> listarTodos() {
+    public List<Reserva> getReservas() {
         return repository.findAll();
     }
 
-    public Optional<Reserva> buscarPorId(Long id) {
+    public Optional<Reserva> getReservaById(Long id) {
         return repository.findById(id);
     }
 
     @Transactional
     public Reserva salvar(Reserva reserva) {
+
         validar(reserva);
 
         reserva.setDataReserva(LocalDate.now());
@@ -38,10 +39,13 @@ public class ReservaService {
                 reserva.getCliente().getId(),
                 reserva.getObra().getId())) {
 
-            throw new RuntimeException("Cliente já possui reserva para esta obra");
+            throw new RegraNegocioException(
+                    "Cliente já possui reserva para esta obra");
         }
 
-        Integer posicao = repository.countByObra(reserva.getObra()) + 1;
+        Integer posicao =
+                repository.countByObra(reserva.getObra()) + 1;
+
         reserva.setPosicaoFila(posicao);
 
         return repository.save(reserva);
@@ -49,28 +53,30 @@ public class ReservaService {
 
     @Transactional
     public void excluir(Reserva reserva) {
-
-        Objects.requireNonNull(reserva.getId(), "ID não pode ser nulo");
-
+        Objects.requireNonNull(reserva.getId());
         repository.delete(reserva);
     }
 
-    private void validar(Reserva reserva) {
+    public void validar(Reserva reserva) {
 
         if (reserva == null) {
-            throw new RuntimeException("Reserva não pode ser nula");
+            throw new RegraNegocioException("Reserva inválida");
         }
 
-        if (reserva.getCliente() == null || reserva.getCliente().getId() == null) {
-            throw new RuntimeException("Cliente é obrigatório");
+        if (reserva.getCliente() == null ||
+                reserva.getCliente().getId() == null) {
+
+            throw new RegraNegocioException("Cliente inválido");
         }
 
-        if (reserva.getObra() == null || reserva.getObra().getId() == null) {
-            throw new RuntimeException("Obra é obrigatória");
+        if (reserva.getObra() == null ||
+                reserva.getObra().getId() == null) {
+
+            throw new RegraNegocioException("Obra inválida");
         }
 
         if (reserva.getStatus() == null) {
-            throw new RuntimeException("Status é obrigatório");
+            throw new RegraNegocioException("Status inválido");
         }
     }
 }

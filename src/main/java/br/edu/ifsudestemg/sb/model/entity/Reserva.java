@@ -1,36 +1,41 @@
 package br.edu.ifsudestemg.sb.model.entity;
 
-import javax.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+import javax.persistence.*;
 import java.time.LocalDate;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
-@AllArgsConstructor
+public class Reserva {
 
-public class Reserva
-{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private LocalDate dataReserva;
-    private int posicaoFila;
 
-    @ManyToOne
+    @Column(nullable = false)
+    private Integer posicaoFila;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "cliente_id")
     private Cliente cliente;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "obra_id")
     private Obra obra;
 
     @ManyToOne
+    @JoinColumn(name = "exemplar_id")
     private Exemplar exemplar;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "status_id")
     private StatusReserva status;
-
 }

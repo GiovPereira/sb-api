@@ -1,5 +1,6 @@
 package br.edu.ifsudestemg.sb.service;
 
+import br.edu.ifsudestemg.sb.exception.RegraNegocioException;
 import br.edu.ifsudestemg.sb.model.entity.StatusExemplar;
 import br.edu.ifsudestemg.sb.model.repository.StatusExemplarRepository;
 import org.springframework.stereotype.Service;
@@ -12,29 +13,33 @@ import java.util.Optional;
 @Service
 public class StatusExemplarService {
 
-    private final StatusExemplarRepository repository;
+    private StatusExemplarRepository repository;
 
     public StatusExemplarService(StatusExemplarRepository repository) {
         this.repository = repository;
     }
 
-    public List<StatusExemplar> listarTodos() {
+    public List<StatusExemplar> getStatusExemplares() {
         return repository.findAll();
     }
 
-    public Optional<StatusExemplar> buscarPorId(Long id) {
+    public Optional<StatusExemplar> getStatusExemplarById(Long id) {
         return repository.findById(id);
     }
 
     @Transactional
     public StatusExemplar salvar(StatusExemplar statusExemplar) {
+
         validar(statusExemplar);
 
-        String nomeNormalizado = statusExemplar.getNome().trim().toUpperCase();
+        String nomeNormalizado =
+                statusExemplar.getNome().trim().toUpperCase();
+
         statusExemplar.setNome(nomeNormalizado);
 
         if (repository.existsByNomeIgnoreCase(nomeNormalizado)) {
-            throw new RuntimeException("Já existe um status com esse nome");
+            throw new RegraNegocioException(
+                    "Já existe um status com esse nome");
         }
 
         return repository.save(statusExemplar);
@@ -42,23 +47,24 @@ public class StatusExemplarService {
 
     @Transactional
     public void excluir(StatusExemplar statusExemplar) {
-
-        Objects.requireNonNull(statusExemplar.getId(), "ID não pode ser nulo");
+        Objects.requireNonNull(statusExemplar.getId());
         repository.delete(statusExemplar);
     }
 
-    private void validar(StatusExemplar statusExemplar) {
+    public void validar(StatusExemplar statusExemplar) {
 
         if (statusExemplar == null) {
-            throw new RuntimeException("StatusExemplar não pode ser nulo");
+            throw new RegraNegocioException("Status exemplar inválido");
         }
 
-        if (statusExemplar.getNome() == null || statusExemplar.getNome().trim().isEmpty()) {
-            throw new RuntimeException("Nome é obrigatório");
+        if (statusExemplar.getNome() == null ||
+                statusExemplar.getNome().trim().equals("")) {
+
+            throw new RegraNegocioException("Nome inválido");
         }
 
         if (statusExemplar.getNome().length() > 50) {
-            throw new RuntimeException("Nome muito longo");
+            throw new RegraNegocioException("Nome inválido");
         }
     }
 }

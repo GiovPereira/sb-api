@@ -1,50 +1,58 @@
 package br.edu.ifsudestemg.sb.service;
 
+import br.edu.ifsudestemg.sb.exception.RegraNegocioException;
 import br.edu.ifsudestemg.sb.model.entity.StatusReserva;
 import br.edu.ifsudestemg.sb.model.repository.StatusReservaRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
 public class StatusReservaService {
 
-    private final StatusReservaRepository repository;
+    private StatusReservaRepository repository;
 
     public StatusReservaService(StatusReservaRepository repository) {
         this.repository = repository;
     }
 
-    public List<StatusReserva> listarTodos() {
+    public List<StatusReserva> getStatusReservas() {
         return repository.findAll();
     }
 
-    public Optional<StatusReserva> buscarPorId(Long id) {
+    public Optional<StatusReserva> getStatusReservaById(Long id) {
         return repository.findById(id);
     }
 
+    @Transactional
     public StatusReserva salvar(StatusReserva statusReserva) {
         validar(statusReserva);
         return repository.save(statusReserva);
     }
 
-    public void deletar(Long id) {
-        repository.deleteById(id);
+    @Transactional
+    public void excluir(StatusReserva statusReserva) {
+        Objects.requireNonNull(statusReserva.getId());
+        repository.delete(statusReserva);
     }
 
-    private void validar(StatusReserva statusReserva) {
+    public void validar(StatusReserva statusReserva) {
 
         if (statusReserva == null) {
-            throw new RuntimeException("StatusReserva não pode ser nulo");
+            throw new RegraNegocioException("Status da reserva inválido");
         }
 
-        if (statusReserva.getNome() == null || statusReserva.getNome().trim().isEmpty()) {
-            throw new RuntimeException("Nome do status é obrigatório");
+        if (statusReserva.getNome() == null ||
+                statusReserva.getNome().trim().equals("")) {
+
+            throw new RegraNegocioException("Nome inválido");
         }
 
         if (statusReserva.getNome().length() > 50) {
-            throw new RuntimeException("Nome do status muito longo");
+            throw new RegraNegocioException("Nome inválido");
         }
     }
 }
