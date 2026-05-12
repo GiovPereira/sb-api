@@ -18,9 +18,6 @@ public class DuracaoPadraoEmprestimoService {
     public DuracaoPadraoEmprestimoService(
             DuracaoPadraoEmprestimoRepository repository) {
 
-        this.repository = repository;
-    }
-
     public List<DuracaoPadraoEmprestimo> getDuracoesPadraoEmprestimo() {
         return repository.findAll();
     }
@@ -69,4 +66,5 @@ public class DuracaoPadraoEmprestimoService {
                     "Dias úteis inválido");
         }
     }
+}
 }
