@@ -3,7 +3,6 @@ package br.edu.ifsudestemg.sb.api.controller;
 import br.edu.ifsudestemg.sb.api.dto.ReservaDTO;
 import br.edu.ifsudestemg.sb.exception.RegraNegocioException;
 import br.edu.ifsudestemg.sb.model.entity.Reserva;
-import br.edu.ifsudestemg.sb.service.ReservaService;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
