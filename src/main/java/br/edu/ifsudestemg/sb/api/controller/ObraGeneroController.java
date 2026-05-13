@@ -1,11 +1,12 @@
 package br.edu.ifsudestemg.sb.api.controller;
 
+import br.edu.ifsudestemg.sb.exception.RegraNegocioException;
 
 import br.edu.ifsudestemg.sb.api.dto.ObraGeneroDTO;
-
 import br.edu.ifsudestemg.sb.model.entity.ObraGenero;
 import br.edu.ifsudestemg.sb.service.ObraGeneroService;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,14 +15,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-
 @RestController
 @RequestMapping("/api/v1/obraGeneros")
 @RequiredArgsConstructor
 @CrossOrigin
-
-public class ObraGeneroController
-{
+public class ObraGeneroController {
 
     private final ObraGeneroService service;
 
@@ -40,4 +38,49 @@ public class ObraGeneroController
         return ResponseEntity.ok(obraGenero.map(ObraGeneroDTO::create));
     }
 
+    @PostMapping()
+    public ResponseEntity post(@RequestBody ObraGeneroDTO dto) {
+        try {
+            ObraGenero obraGenero = converter(dto);
+            obraGenero = service.salvar(obraGenero);
+            return new ResponseEntity(obraGenero, HttpStatus.CREATED);
+        } catch (RegraNegocioException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PutMapping("{id}")
+    public ResponseEntity atualizar(@PathVariable("id") Long id, @RequestBody ObraGeneroDTO dto) {
+        if (!service.getObraGeneroById(id).isPresent()) {
+            return new ResponseEntity("ObraGenero não encontrada", HttpStatus.NOT_FOUND);
+        }
+        try {
+            ObraGenero obraGenero = converter(dto);
+            obraGenero.setId(id);
+            service.salvar(obraGenero);
+            return ResponseEntity.ok(obraGenero);
+        } catch (RegraNegocioException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("{id}")
+    public ResponseEntity excluir(@PathVariable("id") Long id) {
+        Optional<ObraGenero> obraGenero = service.getObraGeneroById(id);
+        if (!obraGenero.isPresent()) {
+            return new ResponseEntity("ObraGenero não encontrada", HttpStatus.NOT_FOUND);
+        }
+        try {
+            service.excluir(obraGenero.get());
+            return new ResponseEntity(HttpStatus.NO_CONTENT);
+        } catch (RegraNegocioException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    public ObraGenero converter(ObraGeneroDTO dto) {
+        ModelMapper modelMapper = new ModelMapper();
+        ObraGenero obraGenero = modelMapper.map(dto, ObraGenero.class);
+        return obraGenero;
+    }
 }

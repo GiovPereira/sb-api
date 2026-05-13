@@ -1,9 +1,8 @@
 package br.edu.ifsudestemg.sb.api.controller;
 
+import br.edu.ifsudestemg.sb.exception.RegraNegocioException;
 
 import br.edu.ifsudestemg.sb.api.dto.ObraDTO;
-
-import br.edu.ifsudestemg.sb.exception.RegraNegocioException;
 import br.edu.ifsudestemg.sb.model.entity.Obra;
 import br.edu.ifsudestemg.sb.service.ObraService;
 import lombok.RequiredArgsConstructor;
@@ -16,12 +15,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-
 @RestController
 @RequestMapping("/api/v1/obras")
 @RequiredArgsConstructor
 @CrossOrigin
-
 public class ObraController {
 
     private final ObraService service;
@@ -41,4 +38,49 @@ public class ObraController {
         return ResponseEntity.ok(obra.map(ObraDTO::create));
     }
 
+    @PostMapping()
+    public ResponseEntity post(@RequestBody ObraDTO dto) {
+        try {
+            Obra obra = converter(dto);
+            obra = service.salvar(obra);
+            return new ResponseEntity(obra, HttpStatus.CREATED);
+        } catch (RegraNegocioException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PutMapping("{id}")
+    public ResponseEntity atualizar(@PathVariable("id") Long id, @RequestBody ObraDTO dto) {
+        if (!service.getObraById(id).isPresent()) {
+            return new ResponseEntity("Obra não encontrada", HttpStatus.NOT_FOUND);
+        }
+        try {
+            Obra obra = converter(dto);
+            obra.setId(id);
+            service.salvar(obra);
+            return ResponseEntity.ok(obra);
+        } catch (RegraNegocioException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("{id}")
+    public ResponseEntity excluir(@PathVariable("id") Long id) {
+        Optional<Obra> obra = service.getObraById(id);
+        if (!obra.isPresent()) {
+            return new ResponseEntity("Obra não encontrada", HttpStatus.NOT_FOUND);
+        }
+        try {
+            service.excluir(obra.get());
+            return new ResponseEntity(HttpStatus.NO_CONTENT);
+        } catch (RegraNegocioException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    public Obra converter(ObraDTO dto) {
+        ModelMapper modelMapper = new ModelMapper();
+        Obra obra = modelMapper.map(dto, Obra.class);
+        return obra;
+    }
 }

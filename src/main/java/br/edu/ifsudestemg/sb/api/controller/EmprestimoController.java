@@ -1,9 +1,8 @@
 package br.edu.ifsudestemg.sb.api.controller;
 
+import br.edu.ifsudestemg.sb.exception.RegraNegocioException;
 
 import br.edu.ifsudestemg.sb.api.dto.EmprestimoDTO;
-
-import br.edu.ifsudestemg.sb.exception.RegraNegocioException;
 import br.edu.ifsudestemg.sb.model.entity.Emprestimo;
 import br.edu.ifsudestemg.sb.service.EmprestimoService;
 import lombok.RequiredArgsConstructor;
@@ -16,12 +15,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-
 @RestController
 @RequestMapping("/api/v1/emprestimos")
 @RequiredArgsConstructor
 @CrossOrigin
-
 public class EmprestimoController {
 
     private final EmprestimoService service;
@@ -36,9 +33,54 @@ public class EmprestimoController {
     public ResponseEntity get(@PathVariable("id") Long id) {
         Optional<Emprestimo> emprestimo = service.getEmprestimoById(id);
         if (!emprestimo.isPresent()) {
-            return new ResponseEntity("Empréstimo não encontrada", HttpStatus.NOT_FOUND);
+            return new ResponseEntity("Emprestimo não encontrada", HttpStatus.NOT_FOUND);
         }
         return ResponseEntity.ok(emprestimo.map(EmprestimoDTO::create));
     }
 
+    @PostMapping()
+    public ResponseEntity post(@RequestBody EmprestimoDTO dto) {
+        try {
+            Emprestimo emprestimo = converter(dto);
+            emprestimo = service.salvar(emprestimo);
+            return new ResponseEntity(emprestimo, HttpStatus.CREATED);
+        } catch (RegraNegocioException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PutMapping("{id}")
+    public ResponseEntity atualizar(@PathVariable("id") Long id, @RequestBody EmprestimoDTO dto) {
+        if (!service.getEmprestimoById(id).isPresent()) {
+            return new ResponseEntity("Emprestimo não encontrada", HttpStatus.NOT_FOUND);
+        }
+        try {
+            Emprestimo emprestimo = converter(dto);
+            emprestimo.setId(id);
+            service.salvar(emprestimo);
+            return ResponseEntity.ok(emprestimo);
+        } catch (RegraNegocioException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("{id}")
+    public ResponseEntity excluir(@PathVariable("id") Long id) {
+        Optional<Emprestimo> emprestimo = service.getEmprestimoById(id);
+        if (!emprestimo.isPresent()) {
+            return new ResponseEntity("Emprestimo não encontrada", HttpStatus.NOT_FOUND);
+        }
+        try {
+            service.excluir(emprestimo.get());
+            return new ResponseEntity(HttpStatus.NO_CONTENT);
+        } catch (RegraNegocioException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    public Emprestimo converter(EmprestimoDTO dto) {
+        ModelMapper modelMapper = new ModelMapper();
+        Emprestimo emprestimo = modelMapper.map(dto, Emprestimo.class);
+        return emprestimo;
+    }
 }

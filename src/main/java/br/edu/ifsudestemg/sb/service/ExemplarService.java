@@ -25,4 +25,23 @@ public class ExemplarService {
     public Optional<Exemplar> getExemplarById(Long id) {
         return repository.findById(id);
     }
+
+    @Transactional
+    public Exemplar salvar(Exemplar exemplar) {
+        validar(exemplar);
+        return repository.save(exemplar);
+    }
+
+    @Transactional
+    public void excluir(Exemplar exemplar) {
+        Objects.requireNonNull(exemplar.getId());
+        repository.delete(exemplar);
+    }
+
+    public void validar(Exemplar exemplar) {
+//        if (exemplar.getDataAquisicao() == null || exemplar.getDataAquisicao().trim().equals("")) {
+//            throw new RegraNegocioException("Nome inválido");
+//        }
+    }
+
 }

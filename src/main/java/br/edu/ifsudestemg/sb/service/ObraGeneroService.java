@@ -9,10 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-@Service
-public class ObraGeneroService
-{
 
+@Service
+public class ObraGeneroService {
     private ObraGeneroRepository repository;
 
     public ObraGeneroService(ObraGeneroRepository repository) {
@@ -28,19 +27,18 @@ public class ObraGeneroService
     }
 
     @Transactional
-    public ObraGenero salvar(ObraGenero ObraGenero) {
-        validar(ObraGenero);
-        return repository.save(ObraGenero);
+    public ObraGenero salvar(ObraGenero obraGenero) {
+        validar(obraGenero);
+        return repository.save(obraGenero);
     }
 
     @Transactional
-    public void excluir(ObraGenero ObraGenero) {
-        Objects.requireNonNull(ObraGenero.getId());
-        repository.delete(ObraGenero);
+    public void excluir(ObraGenero obraGenero) {
+        Objects.requireNonNull(obraGenero.getId());
+        repository.delete(obraGenero);
     }
 
-    public void validar(ObraGenero ObraGenero) {
-
+    public void validar(ObraGenero obraGenero) {
 //        if (ObraGenero.getNome() == null || ObraGenero.getNome().trim().equals("")) {
 //            throw new RegraNegocioException("Nome inválido");
 //        }
@@ -48,4 +46,5 @@ public class ObraGeneroService
 //            throw new RegraNegocioException("Curso inválido");
 //        }
     }
+
 }

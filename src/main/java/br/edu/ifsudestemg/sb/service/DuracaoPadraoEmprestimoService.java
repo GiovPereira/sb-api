@@ -15,16 +15,15 @@ public class DuracaoPadraoEmprestimoService {
 
     private DuracaoPadraoEmprestimoRepository repository;
 
-    public DuracaoPadraoEmprestimoService(
-            DuracaoPadraoEmprestimoRepository repository) {
-
-    public List<DuracaoPadraoEmprestimo> getDuracoesPadraoEmprestimo() {
+    public DuracaoPadraoEmprestimoService(DuracaoPadraoEmprestimoRepository repository) {
+        this.repository = repository;
+    }
+    public List<DuracaoPadraoEmprestimo> getDuracaoPadraoEmprestimos() {
         return repository.findAll();
     }
 
     public Optional<DuracaoPadraoEmprestimo>
     getDuracaoPadraoEmprestimoById(Long id) {
-
         return repository.findById(id);
     }
 
@@ -66,5 +65,4 @@ public class DuracaoPadraoEmprestimoService {
                     "Dias úteis inválido");
         }
     }
-}
 }

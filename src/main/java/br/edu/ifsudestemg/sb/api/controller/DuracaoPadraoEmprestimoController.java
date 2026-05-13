@@ -14,7 +14,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/v1/duracoesPadraoEmprestimo")
+@RequestMapping("/api/v1/duracaoPadraoEmprestimos")
 @CrossOrigin
 public class DuracaoPadraoEmprestimoController {
 
@@ -30,7 +30,7 @@ public class DuracaoPadraoEmprestimoController {
     public ResponseEntity get() {
 
         List<DuracaoPadraoEmprestimo> duracoes =
-                service.getDuracoesPadraoEmprestimo();
+                service.getDuracaoPadraoEmprestimos();
 
         return ResponseEntity.ok(
                 duracoes.stream()

@@ -11,9 +11,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Service
-public class ObraService
-{
-
+public class ObraService {
     private ObraRepository repository;
 
     public ObraService(ObraRepository repository) {
@@ -27,4 +25,23 @@ public class ObraService
     public Optional<Obra> getObraById(Long id) {
         return repository.findById(id);
     }
+
+    @Transactional
+    public Obra salvar(Obra obra) {
+        validar(obra);
+        return repository.save(obra);
+    }
+
+    @Transactional
+    public void excluir(Obra obra) {
+        Objects.requireNonNull(obra.getId());
+        repository.delete(obra);
+    }
+
+    public void validar(Obra obra) {
+        if (obra.getTitulo() == null || obra.getTitulo().trim().equals("")) {
+            throw new RegraNegocioException("Nome inválido");
+        }
+    }
+
 }

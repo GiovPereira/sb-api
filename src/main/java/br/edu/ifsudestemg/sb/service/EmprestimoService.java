@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-
 @Service
 public class EmprestimoService {
     private EmprestimoRepository repository;
@@ -26,4 +25,23 @@ public class EmprestimoService {
     public Optional<Emprestimo> getEmprestimoById(Long id) {
         return repository.findById(id);
     }
+
+    @Transactional
+    public Emprestimo salvar(Emprestimo emprestimo) {
+        validar(emprestimo);
+        return repository.save(emprestimo);
+    }
+
+    @Transactional
+    public void excluir(Emprestimo emprestimo) {
+        Objects.requireNonNull(emprestimo.getId());
+        repository.delete(emprestimo);
+    }
+
+    public void validar(Emprestimo emprestimo) {
+//        if (emprestimo.getNome() == null || emprestimo.getNome().trim().equals("")) {
+//            throw new RegraNegocioException("Nome inválido");
+//        }
+    }
+
 }
