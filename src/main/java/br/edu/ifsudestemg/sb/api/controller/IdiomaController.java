@@ -26,9 +26,7 @@ public class IdiomaController {
 
     @GetMapping()
     public ResponseEntity get() {
-
         List<Idioma> idiomas = service.getIdiomas();
-
         return ResponseEntity.ok(
                 idiomas.stream()
                         .map(IdiomaDTO::create)
@@ -38,17 +36,13 @@ public class IdiomaController {
 
     @GetMapping("/{id}")
     public ResponseEntity get(@PathVariable("id") Long id) {
-
         Optional<Idioma> idioma = service.getIdiomaById(id);
-
         if (!idioma.isPresent()) {
-
             return new ResponseEntity(
                     "Idioma não encontrado",
                     HttpStatus.NOT_FOUND
             );
         }
-
         return ResponseEntity.ok(
                 idioma.map(IdiomaDTO::create)
         );
@@ -58,18 +52,13 @@ public class IdiomaController {
     public ResponseEntity post(@RequestBody IdiomaDTO dto) {
 
         try {
-
             Idioma idioma = converter(dto);
-
             idioma = service.salvar(idioma);
-
             return new ResponseEntity(
                     IdiomaDTO.create(idioma),
                     HttpStatus.CREATED
             );
-
         } catch (RegraNegocioException e) {
-
             return ResponseEntity
                     .badRequest()
                     .body(e.getMessage());
@@ -80,9 +69,7 @@ public class IdiomaController {
     public ResponseEntity atualizar(
             @PathVariable("id") Long id,
             @RequestBody IdiomaDTO dto) {
-
         if (!service.getIdiomaById(id).isPresent()) {
-
             return new ResponseEntity(
                     "Idioma não encontrado",
                     HttpStatus.NOT_FOUND
@@ -90,19 +77,13 @@ public class IdiomaController {
         }
 
         try {
-
             Idioma idioma = converter(dto);
-
             idioma.setId(id);
-
             idioma = service.salvar(idioma);
-
             return ResponseEntity.ok(
                     IdiomaDTO.create(idioma)
             );
-
         } catch (RegraNegocioException e) {
-
             return ResponseEntity
                     .badRequest()
                     .body(e.getMessage());
@@ -115,23 +96,17 @@ public class IdiomaController {
         Optional<Idioma> idioma = service.getIdiomaById(id);
 
         if (!idioma.isPresent()) {
-
             return new ResponseEntity(
                     "Idioma não encontrado",
                     HttpStatus.NOT_FOUND
             );
         }
-
         try {
-
             service.excluir(idioma.get());
-
             return new ResponseEntity(
                     HttpStatus.NO_CONTENT
             );
-
         } catch (RegraNegocioException e) {
-
             return ResponseEntity
                     .badRequest()
                     .body(e.getMessage());
@@ -139,9 +114,7 @@ public class IdiomaController {
     }
 
     public Idioma converter(IdiomaDTO dto) {
-
         ModelMapper modelMapper = new ModelMapper();
-
         return modelMapper.map(dto, Idioma.class);
     }
 }

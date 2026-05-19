@@ -22,7 +22,6 @@ public class DuracaoPadraoEmprestimoController {
 
     public DuracaoPadraoEmprestimoController(
             DuracaoPadraoEmprestimoService service) {
-
         this.service = service;
     }
 
@@ -52,7 +51,6 @@ public class DuracaoPadraoEmprestimoController {
                     HttpStatus.NOT_FOUND
             );
         }
-
         return ResponseEntity.ok(
                 duracao.map(DuracaoPadraoEmprestimoDTO::create)
         );
@@ -63,18 +61,14 @@ public class DuracaoPadraoEmprestimoController {
             @RequestBody DuracaoPadraoEmprestimoDTO dto) {
 
         try {
-
             DuracaoPadraoEmprestimo duracao = converter(dto);
-
             duracao = service.salvar(duracao);
-
             return new ResponseEntity(
                     DuracaoPadraoEmprestimoDTO.create(duracao),
                     HttpStatus.CREATED
             );
 
         } catch (RegraNegocioException e) {
-
             return ResponseEntity
                     .badRequest()
                     .body(e.getMessage());
@@ -87,21 +81,16 @@ public class DuracaoPadraoEmprestimoController {
             @RequestBody DuracaoPadraoEmprestimoDTO dto) {
 
         if (!service.getDuracaoPadraoEmprestimoById(id).isPresent()) {
-
             return new ResponseEntity(
                     "Duração não encontrada",
                     HttpStatus.NOT_FOUND
             );
         }
-
         try {
 
             DuracaoPadraoEmprestimo duracao = converter(dto);
-
             duracao.setId(id);
-
             duracao = service.salvar(duracao);
-
             return ResponseEntity.ok(
                     DuracaoPadraoEmprestimoDTO.create(duracao)
             );
@@ -121,7 +110,6 @@ public class DuracaoPadraoEmprestimoController {
                 service.getDuracaoPadraoEmprestimoById(id);
 
         if (!duracao.isPresent()) {
-
             return new ResponseEntity(
                     "Duração não encontrada",
                     HttpStatus.NOT_FOUND
@@ -129,7 +117,6 @@ public class DuracaoPadraoEmprestimoController {
         }
 
         try {
-
             service.excluir(duracao.get());
 
             return new ResponseEntity(
