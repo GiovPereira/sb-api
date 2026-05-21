@@ -4,6 +4,9 @@ import br.edu.ifsudestemg.sb.api.dto.DuracaoPadraoEmprestimoDTO;
 import br.edu.ifsudestemg.sb.exception.RegraNegocioException;
 import br.edu.ifsudestemg.sb.model.entity.DuracaoPadraoEmprestimo;
 import br.edu.ifsudestemg.sb.service.DuracaoPadraoEmprestimoService;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +42,11 @@ public class DuracaoPadraoEmprestimoController {
     }
 
     @GetMapping("/{id}")
+    @ApiOperation("Obter detalhes de duração")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Duração encontrada"),
+            @ApiResponse(code = 404, message = "Duração não encontrada")
+    })
     public ResponseEntity get(@PathVariable("id") Long id) {
 
         Optional<DuracaoPadraoEmprestimo> duracao =
@@ -57,6 +65,11 @@ public class DuracaoPadraoEmprestimoController {
     }
 
     @PostMapping()
+    @ApiOperation("Salva uma nova duração")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Duração salva com sucesso"),
+            @ApiResponse(code = 400, message = "Erro ao salvar a duração")
+    })
     public ResponseEntity post(
             @RequestBody DuracaoPadraoEmprestimoDTO dto) {
 

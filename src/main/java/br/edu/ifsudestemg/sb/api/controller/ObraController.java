@@ -5,6 +5,9 @@ import br.edu.ifsudestemg.sb.exception.RegraNegocioException;
 import br.edu.ifsudestemg.sb.api.dto.ObraDTO;
 import br.edu.ifsudestemg.sb.model.entity.Obra;
 import br.edu.ifsudestemg.sb.service.ObraService;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -30,6 +33,11 @@ public class ObraController {
     }
 
     @GetMapping("/{id}")
+    @ApiOperation("Obter detalhes de uma obra")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Obra encontrada"),
+            @ApiResponse(code = 404, message = "Obra não encontrada")
+    })
     public ResponseEntity get(@PathVariable("id") Long id) {
         Optional<Obra> obra = service.getObraById(id);
         if (!obra.isPresent()) {
@@ -39,6 +47,11 @@ public class ObraController {
     }
 
     @PostMapping()
+    @ApiOperation("Salva uma nova obra")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Obra salvo com sucesso"),
+            @ApiResponse(code = 400, message = "Erro ao salvar a obra")
+    })
     public ResponseEntity post(@RequestBody ObraDTO dto) {
         try {
             Obra obra = converter(dto);

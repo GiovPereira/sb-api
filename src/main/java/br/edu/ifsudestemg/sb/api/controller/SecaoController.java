@@ -6,6 +6,9 @@ import br.edu.ifsudestemg.sb.model.entity.Autor;
 import br.edu.ifsudestemg.sb.model.entity.Secao;
 import br.edu.ifsudestemg.sb.api.dto.SecaoDTO;
 import br.edu.ifsudestemg.sb.service.SecaoService;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import net.bytebuddy.dynamic.DynamicType;
 import org.modelmapper.ModelMapper;
@@ -33,6 +36,11 @@ public class SecaoController {
     }
 
     @GetMapping("/{id}")
+    @ApiOperation("Obter detalhes de uma seção")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Seção encontrada"),
+            @ApiResponse(code = 404, message = "Seção não encontrada")
+    })
     public ResponseEntity get(@PathVariable("id") Long id) {
         Optional<Secao> secao = service.getSecaoById(id);
         if (!secao.isPresent()) {
@@ -42,6 +50,11 @@ public class SecaoController {
     }
 
     @PostMapping()
+    @ApiOperation("Salva uma nova seção")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Seção salva com sucesso"),
+            @ApiResponse(code = 400, message = "Erro ao salvar a seção")
+    })
     public ResponseEntity post(@RequestBody SecaoDTO dto) {
         try {
             Secao secao = converter(dto);

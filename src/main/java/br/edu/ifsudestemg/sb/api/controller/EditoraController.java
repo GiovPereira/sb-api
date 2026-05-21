@@ -4,6 +4,9 @@ import br.edu.ifsudestemg.sb.api.dto.EditoraDTO;
 import br.edu.ifsudestemg.sb.exception.RegraNegocioException;
 import br.edu.ifsudestemg.sb.model.entity.Editora;
 import br.edu.ifsudestemg.sb.service.EditoraService;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +40,11 @@ public class EditoraController {
     }
 
     @GetMapping("/{id}")
+    @ApiOperation("Obter detalhes de uma editora")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Editora encontrada"),
+            @ApiResponse(code = 404, message = "Editora não encontrada")
+    })
     public ResponseEntity get(@PathVariable("id") Long id) {
 
         Optional<Editora> editora = service.getEditoraById(id);
@@ -55,6 +63,11 @@ public class EditoraController {
     }
 
     @PostMapping()
+    @ApiOperation("Salva uma nova editora")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Editora salva com sucesso"),
+            @ApiResponse(code = 400, message = "Erro ao salvar a editora")
+    })
     public ResponseEntity post(@RequestBody EditoraDTO dto) {
 
         try {

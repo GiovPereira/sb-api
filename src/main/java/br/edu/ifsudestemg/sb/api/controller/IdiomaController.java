@@ -4,6 +4,9 @@ import br.edu.ifsudestemg.sb.api.dto.IdiomaDTO;
 import br.edu.ifsudestemg.sb.exception.RegraNegocioException;
 import br.edu.ifsudestemg.sb.model.entity.Idioma;
 import br.edu.ifsudestemg.sb.service.IdiomaService;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +38,11 @@ public class IdiomaController {
     }
 
     @GetMapping("/{id}")
+    @ApiOperation("Obter detalhes de um idioma")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Idioma encontrado"),
+            @ApiResponse(code = 404, message = "Idioma não encontrado")
+    })
     public ResponseEntity get(@PathVariable("id") Long id) {
         Optional<Idioma> idioma = service.getIdiomaById(id);
         if (!idioma.isPresent()) {
@@ -49,6 +57,11 @@ public class IdiomaController {
     }
 
     @PostMapping()
+    @ApiOperation("Salva um novo idioma")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Idioma salvo com sucesso"),
+            @ApiResponse(code = 400, message = "Erro ao salvar o idioma")
+    })
     public ResponseEntity post(@RequestBody IdiomaDTO dto) {
 
         try {

@@ -47,6 +47,11 @@ public class AutorController {
     }
 
     @PostMapping()
+    @ApiOperation("Salva um novo autor")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Autor salvo com sucesso"),
+            @ApiResponse(code = 400, message = "Erro ao salvar o autor")
+    })
     public ResponseEntity post(@RequestBody AutorDTO dto) {
         try {
             Autor autor = converter(dto);

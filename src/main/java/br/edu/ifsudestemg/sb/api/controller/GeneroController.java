@@ -5,6 +5,9 @@ import br.edu.ifsudestemg.sb.exception.RegraNegocioException;
 import br.edu.ifsudestemg.sb.api.dto.GeneroDTO;
 import br.edu.ifsudestemg.sb.model.entity.Genero;
 import br.edu.ifsudestemg.sb.service.GeneroService;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -30,15 +33,25 @@ public class GeneroController {
     }
 
     @GetMapping("/{id}")
+    @ApiOperation("Obter detalhes de um genero")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Genero encontrado"),
+            @ApiResponse(code = 404, message = "Genero não encontrado")
+    })
     public ResponseEntity get(@PathVariable("id") Long id) {
         Optional<Genero> genero = service.getGeneroById(id);
         if (!genero.isPresent()) {
-            return new ResponseEntity("Genero não encontrada", HttpStatus.NOT_FOUND);
+            return new ResponseEntity("Genero não encontrado", HttpStatus.NOT_FOUND);
         }
         return ResponseEntity.ok(genero.map(GeneroDTO::create));
     }
 
     @PostMapping()
+    @ApiOperation("Salva um novo genero")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Genero salvo com sucesso"),
+            @ApiResponse(code = 400, message = "Erro ao salvar o genero")
+    })
     public ResponseEntity post(@RequestBody GeneroDTO dto) {
         try {
             Genero genero = converter(dto);
@@ -52,7 +65,7 @@ public class GeneroController {
     @PutMapping("{id}")
     public ResponseEntity atualizar(@PathVariable("id") Long id, @RequestBody GeneroDTO dto) {
         if (!service.getGeneroById(id).isPresent()) {
-            return new ResponseEntity("Genero não encontrada", HttpStatus.NOT_FOUND);
+            return new ResponseEntity("Genero não encontrado", HttpStatus.NOT_FOUND);
         }
         try {
             Genero genero = converter(dto);
@@ -68,7 +81,7 @@ public class GeneroController {
     public ResponseEntity excluir(@PathVariable("id") Long id) {
         Optional<Genero> genero = service.getGeneroById(id);
         if (!genero.isPresent()) {
-            return new ResponseEntity("Genero não encontrada", HttpStatus.NOT_FOUND);
+            return new ResponseEntity("Genero não encontrado", HttpStatus.NOT_FOUND);
         }
         try {
             service.excluir(genero.get());

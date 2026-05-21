@@ -4,6 +4,9 @@ import br.edu.ifsudestemg.sb.api.dto.StatusExemplarDTO;
 import br.edu.ifsudestemg.sb.exception.RegraNegocioException;
 import br.edu.ifsudestemg.sb.model.entity.StatusExemplar;
 import br.edu.ifsudestemg.sb.service.StatusExemplarService;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,16 +25,13 @@ public class StatusExemplarController {
 
     public StatusExemplarController(
             StatusExemplarService service) {
-
         this.service = service;
     }
 
     @GetMapping()
     public ResponseEntity get() {
-
         List<StatusExemplar> statusExemplares =
                 service.getStatusExemplares();
-
         return ResponseEntity.ok(
                 statusExemplares.stream()
                         .map(StatusExemplarDTO::create)
@@ -40,46 +40,38 @@ public class StatusExemplarController {
     }
 
     @GetMapping("/{id}")
+    @ApiOperation("Obter detalhes de um status exemplar")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Status exemplar encontrado"),
+            @ApiResponse(code = 404, message = "Status exemplar não encontrado")
+    })
     public ResponseEntity get(@PathVariable("id") Long id) {
-
         Optional<StatusExemplar> statusExemplar =
                 service.getStatusExemplarById(id);
-
         if (!statusExemplar.isPresent()) {
-
             return new ResponseEntity(
-                    "Status não encontrado",
+                    "Status exemplar não encontrado",
                     HttpStatus.NOT_FOUND
             );
         }
-
         return ResponseEntity.ok(
                 statusExemplar.map(StatusExemplarDTO::create)
         );
     }
-
     @PostMapping()
+    @ApiOperation("Salva um novo status exemplar")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Status exemplar salvo com sucesso"),
+            @ApiResponse(code = 400, message = "Erro ao salvar o status exemplar")
+    })
     public ResponseEntity post(
             @RequestBody StatusExemplarDTO dto) {
-
         try {
-
-            StatusExemplar statusExemplar =
-                    converter(dto);
-
-            statusExemplar =
-                    service.salvar(statusExemplar);
-
-            return new ResponseEntity(
-                    StatusExemplarDTO.create(statusExemplar),
-                    HttpStatus.CREATED
-            );
-
+            StatusExemplar statusExemplar = converter(dto);
+            statusExemplar = service.salvar(statusExemplar);
+            return new ResponseEntity(StatusExemplarDTO.create(statusExemplar), HttpStatus.CREATED);
         } catch (RegraNegocioException e) {
-
-            return ResponseEntity
-                    .badRequest()
-                    .body(e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
@@ -89,75 +81,42 @@ public class StatusExemplarController {
             @RequestBody StatusExemplarDTO dto) {
 
         if (!service.getStatusExemplarById(id).isPresent()) {
-
             return new ResponseEntity(
-                    "Status não encontrado",
-                    HttpStatus.NOT_FOUND
-            );
+                    "Status exemplar não encontrado", HttpStatus.NOT_FOUND);
         }
-
         try {
-
-            StatusExemplar statusExemplar =
-                    converter(dto);
-
+            StatusExemplar statusExemplar = converter(dto);
             statusExemplar.setId(id);
-
-            statusExemplar =
-                    service.salvar(statusExemplar);
-
-            return ResponseEntity.ok(
-                    StatusExemplarDTO.create(statusExemplar)
+            statusExemplar = service.salvar(statusExemplar);
+            return ResponseEntity.ok(StatusExemplarDTO.create(statusExemplar)
             );
-
         } catch (RegraNegocioException e) {
-
-            return ResponseEntity
-                    .badRequest()
-                    .body(e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity excluir(
             @PathVariable("id") Long id) {
-
-        Optional<StatusExemplar> statusExemplar =
-                service.getStatusExemplarById(id);
-
+        Optional<StatusExemplar> statusExemplar = service.getStatusExemplarById(id);
         if (!statusExemplar.isPresent()) {
-
-            return new ResponseEntity(
-                    "Status não encontrado",
-                    HttpStatus.NOT_FOUND
-            );
+            return new ResponseEntity("Status exemplar não encontrado", HttpStatus.NOT_FOUND);
         }
-
         try {
-
             service.excluir(statusExemplar.get());
-
             return new ResponseEntity(
                     HttpStatus.NO_CONTENT
             );
-
         } catch (RegraNegocioException e) {
-
             return ResponseEntity
                     .badRequest()
                     .body(e.getMessage());
         }
     }
 
-    public StatusExemplar converter(
-            StatusExemplarDTO dto) {
-
-        ModelMapper modelMapper =
-                new ModelMapper();
-
-        return modelMapper.map(
-                dto,
-                StatusExemplar.class
+    public StatusExemplar converter(StatusExemplarDTO dto) {
+        ModelMapper modelMapper = new ModelMapper();
+        return modelMapper.map(dto, StatusExemplar.class
         );
     }
 }

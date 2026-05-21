@@ -5,6 +5,9 @@ import br.edu.ifsudestemg.sb.exception.RegraNegocioException;
 import br.edu.ifsudestemg.sb.api.dto.EmprestimoDTO;
 import br.edu.ifsudestemg.sb.model.entity.Emprestimo;
 import br.edu.ifsudestemg.sb.service.EmprestimoService;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -30,15 +33,25 @@ public class EmprestimoController {
     }
 
     @GetMapping("/{id}")
+    @ApiOperation("Obter detalhes de um emprestimo")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Emprestimo encontrado"),
+            @ApiResponse(code = 404, message = "Emprestimo não encontrado")
+    })
     public ResponseEntity get(@PathVariable("id") Long id) {
         Optional<Emprestimo> emprestimo = service.getEmprestimoById(id);
         if (!emprestimo.isPresent()) {
-            return new ResponseEntity("Emprestimo não encontrada", HttpStatus.NOT_FOUND);
+            return new ResponseEntity("Emprestimo não encontrado", HttpStatus.NOT_FOUND);
         }
         return ResponseEntity.ok(emprestimo.map(EmprestimoDTO::create));
     }
 
     @PostMapping()
+    @ApiOperation("Salva um novo emprestimo")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Emprestimo salvo com sucesso"),
+            @ApiResponse(code = 400, message = "Erro ao salvar o emprestimo")
+    })
     public ResponseEntity post(@RequestBody EmprestimoDTO dto) {
         try {
             Emprestimo emprestimo = converter(dto);
@@ -52,7 +65,7 @@ public class EmprestimoController {
     @PutMapping("{id}")
     public ResponseEntity atualizar(@PathVariable("id") Long id, @RequestBody EmprestimoDTO dto) {
         if (!service.getEmprestimoById(id).isPresent()) {
-            return new ResponseEntity("Emprestimo não encontrada", HttpStatus.NOT_FOUND);
+            return new ResponseEntity("Emprestimo não encontrado", HttpStatus.NOT_FOUND);
         }
         try {
             Emprestimo emprestimo = converter(dto);
@@ -68,7 +81,7 @@ public class EmprestimoController {
     public ResponseEntity excluir(@PathVariable("id") Long id) {
         Optional<Emprestimo> emprestimo = service.getEmprestimoById(id);
         if (!emprestimo.isPresent()) {
-            return new ResponseEntity("Emprestimo não encontrada", HttpStatus.NOT_FOUND);
+            return new ResponseEntity("Emprestimo não encontrado", HttpStatus.NOT_FOUND);
         }
         try {
             service.excluir(emprestimo.get());

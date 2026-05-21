@@ -5,6 +5,9 @@ import br.edu.ifsudestemg.sb.exception.RegraNegocioException;
 import br.edu.ifsudestemg.sb.api.dto.ObraAutorDTO;
 import br.edu.ifsudestemg.sb.model.entity.ObraAutor;
 import br.edu.ifsudestemg.sb.service.ObraAutorService;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -30,15 +33,25 @@ public class ObraAutorController {
     }
 
     @GetMapping("/{id}")
+    @ApiOperation("Obter detalhes de um autor da obra")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Autor da obra encontrado"),
+            @ApiResponse(code = 404, message = "Autor da obra não encontrado")
+    })
     public ResponseEntity get(@PathVariable("id") Long id) {
         Optional<ObraAutor> obraAutor = service.getObraAutorById(id);
         if (!obraAutor.isPresent()) {
-            return new ResponseEntity("ObraAutor não encontrada", HttpStatus.NOT_FOUND);
+            return new ResponseEntity("Autor da obra não encontrado", HttpStatus.NOT_FOUND);
         }
         return ResponseEntity.ok(obraAutor.map(ObraAutorDTO::create));
     }
 
     @PostMapping()
+    @ApiOperation("Salva um novo autor de obra")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Autor da obra salvo com sucesso"),
+            @ApiResponse(code = 400, message = "Erro ao salvar o autor da obra")
+    })
     public ResponseEntity post(@RequestBody ObraAutorDTO dto) {
         try {
             ObraAutor obraAutor = converter(dto);
@@ -52,7 +65,7 @@ public class ObraAutorController {
     @PutMapping("{id}")
     public ResponseEntity atualizar(@PathVariable("id") Long id, @RequestBody ObraAutorDTO dto) {
         if (!service.getObraAutorById(id).isPresent()) {
-            return new ResponseEntity("ObraAutor não encontrada", HttpStatus.NOT_FOUND);
+            return new ResponseEntity("Autor da obra não encontrado", HttpStatus.NOT_FOUND);
         }
         try {
             ObraAutor obraAutor = converter(dto);
@@ -68,7 +81,7 @@ public class ObraAutorController {
     public ResponseEntity excluir(@PathVariable("id") Long id) {
         Optional<ObraAutor> obraAutor = service.getObraAutorById(id);
         if (!obraAutor.isPresent()) {
-            return new ResponseEntity("ObraAutor não encontrada", HttpStatus.NOT_FOUND);
+            return new ResponseEntity("Autor da obra não encontrado", HttpStatus.NOT_FOUND);
         }
         try {
             service.excluir(obraAutor.get());
