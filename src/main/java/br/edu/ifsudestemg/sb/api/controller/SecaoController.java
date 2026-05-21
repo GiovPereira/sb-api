@@ -1,6 +1,8 @@
 package br.edu.ifsudestemg.sb.api.controller;
 
+import br.edu.ifsudestemg.sb.api.dto.AutorDTO;
 import br.edu.ifsudestemg.sb.exception.RegraNegocioException;
+import br.edu.ifsudestemg.sb.model.entity.Autor;
 import br.edu.ifsudestemg.sb.model.entity.Secao;
 import br.edu.ifsudestemg.sb.api.dto.SecaoDTO;
 import br.edu.ifsudestemg.sb.service.SecaoService;
@@ -45,6 +47,35 @@ public class SecaoController {
             Secao secao = converter(dto);
             secao = service.salvar(secao);
             return new ResponseEntity(secao, HttpStatus.CREATED);
+        } catch (RegraNegocioException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PutMapping("{id}")
+    public ResponseEntity atualizar(@PathVariable("id") Long id, @RequestBody SecaoDTO dto) {
+        if (!service.getSecaoById(id).isPresent()) {
+            return new ResponseEntity("Secao não encontrada", HttpStatus.NOT_FOUND);
+        }
+        try {
+            Secao secao = converter(dto);
+            secao.setId(id);
+            service.salvar(secao);
+            return ResponseEntity.ok(secao);
+        } catch (RegraNegocioException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("{id}")
+    public ResponseEntity excluir(@PathVariable("id") Long id) {
+        Optional<Secao> secao = service.getSecaoById(id);
+        if (!secao.isPresent()) {
+            return new ResponseEntity("Secao não encontrada", HttpStatus.NOT_FOUND);
+        }
+        try {
+            service.excluir(secao.get());
+            return new ResponseEntity(HttpStatus.NO_CONTENT);
         } catch (RegraNegocioException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

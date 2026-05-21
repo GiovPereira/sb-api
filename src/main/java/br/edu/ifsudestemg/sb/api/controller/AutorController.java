@@ -5,6 +5,9 @@ import br.edu.ifsudestemg.sb.exception.RegraNegocioException;
 import br.edu.ifsudestemg.sb.api.dto.AutorDTO;
 import br.edu.ifsudestemg.sb.model.entity.Autor;
 import br.edu.ifsudestemg.sb.service.AutorService;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -30,10 +33,15 @@ public class AutorController {
     }
 
     @GetMapping("/{id}")
+    @ApiOperation("Obter detalhes de um autor")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Autor encontrado"),
+            @ApiResponse(code = 404, message = "Autor não encontrado")
+    })
     public ResponseEntity get(@PathVariable("id") Long id) {
         Optional<Autor> autor = service.getAutorById(id);
         if (!autor.isPresent()) {
-            return new ResponseEntity("Autor não encontrada", HttpStatus.NOT_FOUND);
+            return new ResponseEntity("Autor não encontrado", HttpStatus.NOT_FOUND);
         }
         return ResponseEntity.ok(autor.map(AutorDTO::create));
     }
