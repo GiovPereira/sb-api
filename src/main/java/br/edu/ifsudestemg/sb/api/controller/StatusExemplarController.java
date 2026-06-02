@@ -28,15 +28,15 @@ public class StatusExemplarController {
         this.service = service;
     }
 
-    @GetMapping()
+    @GetMapping("/{id}")
+    @ApiOperation("Obter status de exemplares")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Status de exemplares encontrados"),
+            @ApiResponse(code = 404, message = "Status de exemplares não encontrados")
+    })
     public ResponseEntity get() {
-        List<StatusExemplar> statusExemplares =
-                service.getStatusExemplares();
-        return ResponseEntity.ok(
-                statusExemplares.stream()
-                        .map(StatusExemplarDTO::create)
-                        .collect(Collectors.toList())
-        );
+        List<StatusExemplar> statusExemplares = service.getStatusExemplares();
+        return ResponseEntity.ok(statusExemplares.stream().map(StatusExemplarDTO::create).collect(Collectors.toList()));
     }
 
     @GetMapping("/{id}")
@@ -46,17 +46,11 @@ public class StatusExemplarController {
             @ApiResponse(code = 404, message = "Status exemplar não encontrado")
     })
     public ResponseEntity get(@PathVariable("id") Long id) {
-        Optional<StatusExemplar> statusExemplar =
-                service.getStatusExemplarById(id);
+        Optional<StatusExemplar> statusExemplar = service.getStatusExemplarById(id);
         if (!statusExemplar.isPresent()) {
-            return new ResponseEntity(
-                    "Status exemplar não encontrado",
-                    HttpStatus.NOT_FOUND
-            );
+            return new ResponseEntity("Status exemplar não encontrado", HttpStatus.NOT_FOUND);
         }
-        return ResponseEntity.ok(
-                statusExemplar.map(StatusExemplarDTO::create)
-        );
+        return ResponseEntity.ok(statusExemplar.map(StatusExemplarDTO::create));
     }
     @PostMapping()
     @ApiOperation("Salva um novo status exemplar")
@@ -76,6 +70,11 @@ public class StatusExemplarController {
     }
 
     @PutMapping("/{id}")
+    @ApiOperation("Atualizar o status do exemplar")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Status do exemplar atualizado com sucesso"),
+            @ApiResponse(code = 400, message = "Erro ao atualizar o status do exemplar")
+    })
     public ResponseEntity atualizar(
             @PathVariable("id") Long id,
             @RequestBody StatusExemplarDTO dto) {
@@ -88,14 +87,18 @@ public class StatusExemplarController {
             StatusExemplar statusExemplar = converter(dto);
             statusExemplar.setId(id);
             statusExemplar = service.salvar(statusExemplar);
-            return ResponseEntity.ok(StatusExemplarDTO.create(statusExemplar)
-            );
+            return ResponseEntity.ok(StatusExemplarDTO.create(statusExemplar));
         } catch (RegraNegocioException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     @DeleteMapping("/{id}")
+    @ApiOperation("Deleta um status de exemplar")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Status de exemplar deletado"),
+            @ApiResponse(code = 404, message = "Status de exemplar não deletado")
+    })
     public ResponseEntity excluir(
             @PathVariable("id") Long id) {
         Optional<StatusExemplar> statusExemplar = service.getStatusExemplarById(id);
@@ -104,19 +107,14 @@ public class StatusExemplarController {
         }
         try {
             service.excluir(statusExemplar.get());
-            return new ResponseEntity(
-                    HttpStatus.NO_CONTENT
-            );
+            return new ResponseEntity(HttpStatus.NO_CONTENT);
         } catch (RegraNegocioException e) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     public StatusExemplar converter(StatusExemplarDTO dto) {
         ModelMapper modelMapper = new ModelMapper();
-        return modelMapper.map(dto, StatusExemplar.class
-        );
+        return modelMapper.map(dto, StatusExemplar.class);
     }
 }

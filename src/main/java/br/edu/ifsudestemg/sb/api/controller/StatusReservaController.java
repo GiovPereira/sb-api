@@ -26,7 +26,12 @@ public class StatusReservaController {
             StatusReservaService service) {this.service = service;
     }
 
-    @GetMapping()
+    @GetMapping("/{id}")
+    @ApiOperation("Obter status de reservas")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Status de reservas encontrados"),
+            @ApiResponse(code = 404, message = "Status de reservas não encontrados")
+    })
     public ResponseEntity get() {
         List<StatusReserva> statusReservas = service.getStatusReservas();
         return ResponseEntity.ok(
@@ -71,13 +76,17 @@ public class StatusReservaController {
     }
 
     @PutMapping("/{id}")
+    @ApiOperation("Atualizar o status da reserva")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Status da reserva atualizado com sucesso"),
+            @ApiResponse(code = 400, message = "Erro ao atualizar o status da reserva")
+    })
     public ResponseEntity atualizar(
             @PathVariable("id") Long id,
             @RequestBody StatusReservaDTO dto) {
         if (!service.getStatusReservaById(id).isPresent()) {
             return new ResponseEntity("Status reserva não encontrado", HttpStatus.NOT_FOUND);
         }
-
         try {
             StatusReserva statusReserva = converter(dto);
             statusReserva.setId(id);
@@ -89,12 +98,16 @@ public class StatusReservaController {
     }
 
     @DeleteMapping("/{id}")
+    @ApiOperation("Deleta um status de uma reserva")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Status de uma reserva deletado"),
+            @ApiResponse(code = 404, message = "Status de uma reserva não deletado")
+    })
     public ResponseEntity excluir(@PathVariable("id") Long id) {
 
         Optional<StatusReserva> statusReserva = service.getStatusReservaById(id);
         if (!statusReserva.isPresent()) {
-            return new ResponseEntity("Status reserva não encontrado", HttpStatus.NOT_FOUND
-            );
+            return new ResponseEntity("Status reserva não encontrado", HttpStatus.NOT_FOUND);
         }
         try {
             service.excluir(statusReserva.get());
@@ -103,10 +116,8 @@ public class StatusReservaController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    public StatusReserva converter(
-            StatusReservaDTO dto) {
+    public StatusReserva converter(StatusReservaDTO dto) {
         ModelMapper modelMapper = new ModelMapper();
-        return modelMapper.map(dto, StatusReserva.class
-        );
+        return modelMapper.map(dto, StatusReserva.class);
     }
 }

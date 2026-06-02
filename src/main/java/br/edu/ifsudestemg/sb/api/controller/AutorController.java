@@ -27,6 +27,11 @@ public class AutorController {
     private final AutorService service;
 
     @GetMapping()
+    @ApiOperation("Obter autores")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Autores listados"),
+            @ApiResponse(code = 404, message = "Autores não listados")
+    })
     public ResponseEntity get() {
         List<Autor> autores = service.getAutores();
         return ResponseEntity.ok(autores.stream().map(AutorDTO::create).collect(Collectors.toList()));
@@ -63,9 +68,14 @@ public class AutorController {
     }
 
     @PutMapping("{id}")
+    @ApiOperation("Atualizar um autor")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Autor atualizado"),
+            @ApiResponse(code = 404, message = "Autor não atualizado")
+    })
     public ResponseEntity atualizar(@PathVariable("id") Long id, @RequestBody AutorDTO dto) {
         if (!service.getAutorById(id).isPresent()) {
-            return new ResponseEntity("Autor não encontrada", HttpStatus.NOT_FOUND);
+            return new ResponseEntity("Autor não encontrado", HttpStatus.NOT_FOUND);
         }
         try {
             Autor autor = converter(dto);
@@ -78,10 +88,15 @@ public class AutorController {
     }
 
     @DeleteMapping("{id}")
+    @ApiOperation("Deleta um autor")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Autor deletado"),
+            @ApiResponse(code = 404, message = "Autor não deletado")
+    })
     public ResponseEntity excluir(@PathVariable("id") Long id) {
         Optional<Autor> autor = service.getAutorById(id);
         if (!autor.isPresent()) {
-            return new ResponseEntity("Autor não encontrada", HttpStatus.NOT_FOUND);
+            return new ResponseEntity("Autor não encontrado", HttpStatus.NOT_FOUND);
         }
         try {
             service.excluir(autor.get());

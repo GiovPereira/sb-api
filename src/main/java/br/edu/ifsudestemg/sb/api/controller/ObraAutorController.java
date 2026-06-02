@@ -26,7 +26,12 @@ public class ObraAutorController {
 
     private final ObraAutorService service;
 
-    @GetMapping()
+    @GetMapping("/{id}")
+    @ApiOperation("Obter detalhes de autores da obra")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Autor da obra encontrado"),
+            @ApiResponse(code = 404, message = "Autor da obra não encontrado")
+    })
     public ResponseEntity get() {
         List<ObraAutor> obraAutores = service.getObraAutores();
         return ResponseEntity.ok(obraAutores.stream().map(ObraAutorDTO::create).collect(Collectors.toList()));
@@ -62,7 +67,12 @@ public class ObraAutorController {
         }
     }
 
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
+    @ApiOperation("Atualizar a obra do autor")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Obra do autor atualizado com sucesso"),
+            @ApiResponse(code = 400, message = "Erro ao atualizar a obra do autor")
+    })
     public ResponseEntity atualizar(@PathVariable("id") Long id, @RequestBody ObraAutorDTO dto) {
         if (!service.getObraAutorById(id).isPresent()) {
             return new ResponseEntity("Autor da obra não encontrado", HttpStatus.NOT_FOUND);
@@ -78,6 +88,11 @@ public class ObraAutorController {
     }
 
     @DeleteMapping("{id}")
+    @ApiOperation("Deleta um autor da obra")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Autor da obra deletado"),
+            @ApiResponse(code = 404, message = "Autor da obra não deletado")
+    })
     public ResponseEntity excluir(@PathVariable("id") Long id) {
         Optional<ObraAutor> obraAutor = service.getObraAutorById(id);
         if (!obraAutor.isPresent()) {

@@ -27,6 +27,11 @@ public class EmprestimoController {
     private final EmprestimoService service;
 
     @GetMapping()
+    @ApiOperation("Obter empréstimos")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Empréstimos listados"),
+            @ApiResponse(code = 404, message = "Empréstimos não listados")
+    })
     public ResponseEntity get() {
         List<Emprestimo> emprestimos = service.getEmprestimos();
         return ResponseEntity.ok(emprestimos.stream().map(EmprestimoDTO::create).collect(Collectors.toList()));
@@ -63,6 +68,11 @@ public class EmprestimoController {
     }
 
     @PutMapping("{id}")
+    @ApiOperation("Atualizar empréstimo")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Empréstimo atualizado"),
+            @ApiResponse(code = 404, message = "Empréstimo não atualizado")
+    })
     public ResponseEntity atualizar(@PathVariable("id") Long id, @RequestBody EmprestimoDTO dto) {
         if (!service.getEmprestimoById(id).isPresent()) {
             return new ResponseEntity("Emprestimo não encontrado", HttpStatus.NOT_FOUND);
@@ -78,6 +88,11 @@ public class EmprestimoController {
     }
 
     @DeleteMapping("{id}")
+    @ApiOperation("Deleta um emprestimo")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Emprestimo deletado"),
+            @ApiResponse(code = 404, message = "Emprestimo não deletado")
+    })
     public ResponseEntity excluir(@PathVariable("id") Long id) {
         Optional<Emprestimo> emprestimo = service.getEmprestimoById(id);
         if (!emprestimo.isPresent()) {

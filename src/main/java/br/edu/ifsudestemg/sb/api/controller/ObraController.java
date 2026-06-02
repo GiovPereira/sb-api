@@ -26,7 +26,12 @@ public class ObraController {
 
     private final ObraService service;
 
-    @GetMapping()
+    @GetMapping("/{id}")
+    @ApiOperation("Obter obras")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Obras encontradas"),
+            @ApiResponse(code = 404, message = "Obras não encontradas")
+    })
     public ResponseEntity get() {
         List<Obra> obras = service.getObras();
         return ResponseEntity.ok(obras.stream().map(ObraDTO::create).collect(Collectors.toList()));
@@ -62,7 +67,12 @@ public class ObraController {
         }
     }
 
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
+    @ApiOperation("Atualizar a obra")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Obra atualizada com sucesso"),
+            @ApiResponse(code = 400, message = "Erro ao atualizar a obra")
+    })
     public ResponseEntity atualizar(@PathVariable("id") Long id, @RequestBody ObraDTO dto) {
         if (!service.getObraById(id).isPresent()) {
             return new ResponseEntity("Obra não encontrada", HttpStatus.NOT_FOUND);
@@ -78,6 +88,11 @@ public class ObraController {
     }
 
     @DeleteMapping("{id}")
+    @ApiOperation("Deleta uma obra")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Obra deletada"),
+            @ApiResponse(code = 404, message = "Obra não deletada")
+    })
     public ResponseEntity excluir(@PathVariable("id") Long id) {
         Optional<Obra> obra = service.getObraById(id);
         if (!obra.isPresent()) {

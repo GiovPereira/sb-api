@@ -27,6 +27,11 @@ public class ExemplarController {
     private final ExemplarService service;
 
     @GetMapping()
+    @ApiOperation("Obter exemplares")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Exemplares listados"),
+            @ApiResponse(code = 404, message = "Exemplares não listados")
+    })
     public ResponseEntity get() {
         List<Exemplar> exemplares = service.getExemplares();
         return ResponseEntity.ok(exemplares.stream().map(ExemplarDTO::create).collect(Collectors.toList()));
@@ -63,6 +68,11 @@ public class ExemplarController {
     }
 
     @PutMapping("{id}")
+    @ApiOperation("Atualizar o exemplar")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Exemplar atualizado"),
+            @ApiResponse(code = 404, message = "Exemplar não atualizado")
+    })
     public ResponseEntity atualizar(@PathVariable("id") Long id, @RequestBody ExemplarDTO dto) {
         if (!service.getExemplarById(id).isPresent()) {
             return new ResponseEntity("Exemplar não encontrado", HttpStatus.NOT_FOUND);
@@ -78,6 +88,11 @@ public class ExemplarController {
     }
 
     @DeleteMapping("{id}")
+    @ApiOperation("Deleta um exemplar")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Exemplar deletado"),
+            @ApiResponse(code = 404, message = "Exemplar não deletado")
+    })
     public ResponseEntity excluir(@PathVariable("id") Long id) {
         Optional<Exemplar> exemplar = service.getExemplarById(id);
         if (!exemplar.isPresent()) {

@@ -29,16 +29,17 @@ public class DuracaoPadraoEmprestimoController {
     }
 
     @GetMapping()
+    @ApiOperation("Obter durações")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Durações listados"),
+            @ApiResponse(code = 404, message = "Durações não listados")
+    })
     public ResponseEntity get() {
 
-        List<DuracaoPadraoEmprestimo> duracoes =
-                service.getDuracaoPadraoEmprestimos();
+        List<DuracaoPadraoEmprestimo> duracoes = service.getDuracaoPadraoEmprestimos();
 
         return ResponseEntity.ok(
-                duracoes.stream()
-                        .map(DuracaoPadraoEmprestimoDTO::create)
-                        .collect(Collectors.toList())
-        );
+                duracoes.stream().map(DuracaoPadraoEmprestimoDTO::create).collect(Collectors.toList()));
     }
 
     @GetMapping("/{id}")
@@ -48,20 +49,12 @@ public class DuracaoPadraoEmprestimoController {
             @ApiResponse(code = 404, message = "Duração não encontrada")
     })
     public ResponseEntity get(@PathVariable("id") Long id) {
-
-        Optional<DuracaoPadraoEmprestimo> duracao =
-                service.getDuracaoPadraoEmprestimoById(id);
+        Optional<DuracaoPadraoEmprestimo> duracao = service.getDuracaoPadraoEmprestimoById(id);
 
         if (!duracao.isPresent()) {
-
-            return new ResponseEntity(
-                    "Duração não encontrada",
-                    HttpStatus.NOT_FOUND
-            );
+            return new ResponseEntity("Duração não encontrada", HttpStatus.NOT_FOUND);
         }
-        return ResponseEntity.ok(
-                duracao.map(DuracaoPadraoEmprestimoDTO::create)
-        );
+        return ResponseEntity.ok(duracao.map(DuracaoPadraoEmprestimoDTO::create));
     }
 
     @PostMapping()
@@ -76,82 +69,62 @@ public class DuracaoPadraoEmprestimoController {
         try {
             DuracaoPadraoEmprestimo duracao = converter(dto);
             duracao = service.salvar(duracao);
-            return new ResponseEntity(
-                    DuracaoPadraoEmprestimoDTO.create(duracao),
-                    HttpStatus.CREATED
-            );
+            return new ResponseEntity(DuracaoPadraoEmprestimoDTO.create(duracao), HttpStatus.CREATED);
 
         } catch (RegraNegocioException e) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     @PutMapping("/{id}")
+    @ApiOperation("Atualizar a duração")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Duração atualizada"),
+            @ApiResponse(code = 404, message = "Duração não atualizada")
+    })
     public ResponseEntity atualizar(
             @PathVariable("id") Long id,
             @RequestBody DuracaoPadraoEmprestimoDTO dto) {
 
         if (!service.getDuracaoPadraoEmprestimoById(id).isPresent()) {
-            return new ResponseEntity(
-                    "Duração não encontrada",
-                    HttpStatus.NOT_FOUND
-            );
+            return new ResponseEntity("Duração não encontrada", HttpStatus.NOT_FOUND);
         }
         try {
-
             DuracaoPadraoEmprestimo duracao = converter(dto);
             duracao.setId(id);
             duracao = service.salvar(duracao);
-            return ResponseEntity.ok(
-                    DuracaoPadraoEmprestimoDTO.create(duracao)
-            );
+            return ResponseEntity.ok(DuracaoPadraoEmprestimoDTO.create(duracao));
 
         } catch (RegraNegocioException e) {
-
-            return ResponseEntity
-                    .badRequest()
-                    .body(e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     @DeleteMapping("/{id}")
+    @ApiOperation("Deleta uma duração")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Duração deletada"),
+            @ApiResponse(code = 404, message = "Duração não deletada")
+    })
     public ResponseEntity excluir(@PathVariable("id") Long id) {
 
-        Optional<DuracaoPadraoEmprestimo> duracao =
-                service.getDuracaoPadraoEmprestimoById(id);
+        Optional<DuracaoPadraoEmprestimo> duracao = service.getDuracaoPadraoEmprestimoById(id);
 
         if (!duracao.isPresent()) {
-            return new ResponseEntity(
-                    "Duração não encontrada",
-                    HttpStatus.NOT_FOUND
-            );
+            return new ResponseEntity("Duração não encontrada", HttpStatus.NOT_FOUND);
         }
 
         try {
             service.excluir(duracao.get());
-
-            return new ResponseEntity(
-                    HttpStatus.NO_CONTENT
-            );
-
+            return new ResponseEntity(HttpStatus.NO_CONTENT);
         } catch (RegraNegocioException e) {
-
-            return ResponseEntity
-                    .badRequest()
-                    .body(e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     public DuracaoPadraoEmprestimo converter(
             DuracaoPadraoEmprestimoDTO dto) {
-
         ModelMapper modelMapper = new ModelMapper();
-
-        return modelMapper.map(
-                dto,
-                DuracaoPadraoEmprestimo.class
-        );
+        return modelMapper.map(dto, DuracaoPadraoEmprestimo.class);
     }
 }

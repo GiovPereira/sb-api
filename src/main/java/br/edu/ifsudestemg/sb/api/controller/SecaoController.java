@@ -29,7 +29,12 @@ public class SecaoController {
 
     private final SecaoService service;
 
-    @GetMapping()
+    @GetMapping("/{id}")
+    @ApiOperation("Obter seções")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Seções encontradas"),
+            @ApiResponse(code = 404, message = "Seções não encontradas")
+    })
     public ResponseEntity get() {
         List<Secao> secao = service.getSecoes();
         return ResponseEntity.ok(secao.stream().map(SecaoDTO::create).collect(Collectors.toList()));
@@ -65,7 +70,12 @@ public class SecaoController {
         }
     }
 
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
+    @ApiOperation("Atualizar a seção")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Seção atualizada com sucesso"),
+            @ApiResponse(code = 400, message = "Erro ao atualizar a seção")
+    })
     public ResponseEntity atualizar(@PathVariable("id") Long id, @RequestBody SecaoDTO dto) {
         if (!service.getSecaoById(id).isPresent()) {
             return new ResponseEntity("Secao não encontrada", HttpStatus.NOT_FOUND);
@@ -81,6 +91,11 @@ public class SecaoController {
     }
 
     @DeleteMapping("{id}")
+    @ApiOperation("Deleta uma seção")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Seção deletada"),
+            @ApiResponse(code = 404, message = "Seção não deletada")
+    })
     public ResponseEntity excluir(@PathVariable("id") Long id) {
         Optional<Secao> secao = service.getSecaoById(id);
         if (!secao.isPresent()) {
@@ -99,5 +114,4 @@ public class SecaoController {
         Secao secao = modelMapper.map(dto, Secao.class);
         return secao;
     }
-
 }

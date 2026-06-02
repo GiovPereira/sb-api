@@ -27,6 +27,11 @@ public class ClienteController {
     private final ClienteService service;
 
     @GetMapping()
+    @ApiOperation("Obter clientes")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Clientes listados"),
+            @ApiResponse(code = 404, message = "Clientes não listados")
+    })
     public ResponseEntity get() {
         List<Cliente> clientes = service.getClientes();
         return ResponseEntity.ok(clientes.stream().map(ClienteDTO::create).collect(Collectors.toList()));
@@ -63,6 +68,11 @@ public class ClienteController {
     }
 
     @PutMapping("{id}")
+    @ApiOperation("Atualizar um cliente")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Cliente atualizado"),
+            @ApiResponse(code = 404, message = "Cliente não atualizado")
+    })
     public ResponseEntity atualizar(@PathVariable("id") Long id, @RequestBody ClienteDTO dto) {
         if (!service.getClienteById(id).isPresent()) {
             return new ResponseEntity("Cliente não encontrada", HttpStatus.NOT_FOUND);
@@ -78,6 +88,11 @@ public class ClienteController {
     }
 
     @DeleteMapping("{id}")
+    @ApiOperation("Deleta um cliente")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Cliente deletado"),
+            @ApiResponse(code = 404, message = "Cliente não deletado")
+    })
     public ResponseEntity excluir(@PathVariable("id") Long id) {
         Optional<Cliente> cliente = service.getClienteById(id);
         if (!cliente.isPresent()) {

@@ -26,7 +26,12 @@ public class ObraGeneroController {
 
     private final ObraGeneroService service;
 
-    @GetMapping()
+    @GetMapping("/{id}")
+    @ApiOperation("Obter generos da obra")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Generos da obra encontrados"),
+            @ApiResponse(code = 404, message = "Generos da obra não encontrados")
+    })
     public ResponseEntity get() {
         List<ObraGenero> obraGeneros = service.getObraGeneros();
         return ResponseEntity.ok(obraGeneros.stream().map(ObraGeneroDTO::create).collect(Collectors.toList()));
@@ -62,7 +67,12 @@ public class ObraGeneroController {
         }
     }
 
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
+    @ApiOperation("Atualizar o genero da obra")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Genero da obra atualizado com sucesso"),
+            @ApiResponse(code = 400, message = "Erro ao atualizar o genero da obra")
+    })
     public ResponseEntity atualizar(@PathVariable("id") Long id, @RequestBody ObraGeneroDTO dto) {
         if (!service.getObraGeneroById(id).isPresent()) {
             return new ResponseEntity("Genero da obra não encontrado", HttpStatus.NOT_FOUND);
@@ -78,6 +88,11 @@ public class ObraGeneroController {
     }
 
     @DeleteMapping("{id}")
+    @ApiOperation("Gênero da obra uma duração")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Genero da obra deletado"),
+            @ApiResponse(code = 404, message = "Genero da obra não deletado")
+    })
     public ResponseEntity excluir(@PathVariable("id") Long id) {
         Optional<ObraGenero> obraGenero = service.getObraGeneroById(id);
         if (!obraGenero.isPresent()) {

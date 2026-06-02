@@ -28,14 +28,15 @@ public class ReservaController {
         this.service = service;
     }
 
-    @GetMapping()
+    @GetMapping("/{id}")
+    @ApiOperation("Obter reservas")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Reservas encontradas"),
+            @ApiResponse(code = 404, message = "Reservas não encontradas")
+    })
     public ResponseEntity get() {
         List<Reserva> reservas = service.getReservas();
-        return ResponseEntity.ok(
-                reservas.stream()
-                        .map(ReservaDTO::create)
-                        .collect(Collectors.toList())
-        );
+        return ResponseEntity.ok(reservas.stream().map(ReservaDTO::create).collect(Collectors.toList()));
     }
 
     @GetMapping("/{id}")
@@ -80,48 +81,43 @@ public class ReservaController {
     }
 
     @PutMapping("/{id}")
+    @ApiOperation("Atualizar a reserva")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Reserva atualizado com sucesso"),
+            @ApiResponse(code = 400, message = "Erro ao atualizar a reserva")
+    })
     public ResponseEntity atualizar(
             @PathVariable("id") Long id,
             @RequestBody ReservaDTO dto) {
         if (!service.getReservaById(id).isPresent()) {
-            return new ResponseEntity(
-                    "Reserva não encontrada",
-                    HttpStatus.NOT_FOUND
-            );
+            return new ResponseEntity("Reserva não encontrada", HttpStatus.NOT_FOUND);
         }
         try {
-
             Reserva reserva = converter(dto);
             reserva.setId(id);
             reserva = service.salvar(reserva);
-            return ResponseEntity.ok(
-                    ReservaDTO.create(reserva)
-            );
+            return ResponseEntity.ok(ReservaDTO.create(reserva));
         } catch (RegraNegocioException e) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     @DeleteMapping("/{id}")
+    @ApiOperation("Deleta uma reserva")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Reserva deletada"),
+            @ApiResponse(code = 404, message = "Reserva não deletada")
+    })
     public ResponseEntity excluir(@PathVariable("id") Long id) {
         Optional<Reserva> reserva = service.getReservaById(id);
         if (!reserva.isPresent()) {
-            return new ResponseEntity(
-                    "Reserva não encontrada",
-                    HttpStatus.NOT_FOUND
-            );
+            return new ResponseEntity("Reserva não encontrada", HttpStatus.NOT_FOUND);
         }
         try {
             service.excluir(reserva.get());
-            return new ResponseEntity(
-                    HttpStatus.NO_CONTENT
-            );
+            return new ResponseEntity(HttpStatus.NO_CONTENT);
         } catch (RegraNegocioException e) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 

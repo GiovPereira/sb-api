@@ -27,7 +27,12 @@ public class IdiomaController {
         this.service = service;
     }
 
-    @GetMapping()
+    @GetMapping("/{id}")
+    @ApiOperation("Obter idiomas")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Idiomas encontrados"),
+            @ApiResponse(code = 404, message = "Idiomas não encontrados")
+    })
     public ResponseEntity get() {
         List<Idioma> idiomas = service.getIdiomas();
         return ResponseEntity.ok(
@@ -67,62 +72,51 @@ public class IdiomaController {
         try {
             Idioma idioma = converter(dto);
             idioma = service.salvar(idioma);
-            return new ResponseEntity(
-                    IdiomaDTO.create(idioma),
-                    HttpStatus.CREATED
-            );
+            return new ResponseEntity(IdiomaDTO.create(idioma), HttpStatus.CREATED);
         } catch (RegraNegocioException e) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     @PutMapping("/{id}")
+    @ApiOperation("Atualizar o idioma")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Idioma atualizado com sucesso"),
+            @ApiResponse(code = 400, message = "Erro ao atualizar o idioma")
+    })
     public ResponseEntity atualizar(
             @PathVariable("id") Long id,
             @RequestBody IdiomaDTO dto) {
         if (!service.getIdiomaById(id).isPresent()) {
-            return new ResponseEntity(
-                    "Idioma não encontrado",
-                    HttpStatus.NOT_FOUND
-            );
+            return new ResponseEntity("Idioma não encontrado", HttpStatus.NOT_FOUND);
         }
 
         try {
             Idioma idioma = converter(dto);
             idioma.setId(id);
             idioma = service.salvar(idioma);
-            return ResponseEntity.ok(
-                    IdiomaDTO.create(idioma)
-            );
+            return ResponseEntity.ok(IdiomaDTO.create(idioma));
         } catch (RegraNegocioException e) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     @DeleteMapping("/{id}")
+    @ApiOperation("Deleta um idioma")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Idioma deletado"),
+            @ApiResponse(code = 404, message = "Idioma não deletado")
+    })
     public ResponseEntity excluir(@PathVariable("id") Long id) {
-
         Optional<Idioma> idioma = service.getIdiomaById(id);
-
         if (!idioma.isPresent()) {
-            return new ResponseEntity(
-                    "Idioma não encontrado",
-                    HttpStatus.NOT_FOUND
-            );
+            return new ResponseEntity("Idioma não encontrado", HttpStatus.NOT_FOUND);
         }
         try {
             service.excluir(idioma.get());
-            return new ResponseEntity(
-                    HttpStatus.NO_CONTENT
-            );
+            return new ResponseEntity(HttpStatus.NO_CONTENT);
         } catch (RegraNegocioException e) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 

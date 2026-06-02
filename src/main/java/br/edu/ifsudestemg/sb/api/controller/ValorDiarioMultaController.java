@@ -22,10 +22,16 @@ import java.util.stream.Collectors;
 public class ValorDiarioMultaController {
 
     private ValorDiarioMultaService service;
-    public ValorDiarioMultaController(ValorDiarioMultaService service) {this.service = service;
+    public ValorDiarioMultaController(ValorDiarioMultaService service) {
+        this.service = service;
     }
 
-    @GetMapping()
+    @@GetMapping("/{id}")
+    @ApiOperation("Obter valores")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Valores encontrados"),
+            @ApiResponse(code = 404, message = "Valores não encontrados")
+    })
     public ResponseEntity get() {
         List<ValorDiarioMulta> valorDiarioMultas = service.getValorDiarioMultas();
         return ResponseEntity.ok(valorDiarioMultas.stream().map(ValorDiarioMultaDTO::create).collect(Collectors.toList()));
@@ -65,6 +71,11 @@ public class ValorDiarioMultaController {
     }
 
     @PutMapping("/{id}")
+    @ApiOperation("Atualizar o valor")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Valor atualizado com sucesso"),
+            @ApiResponse(code = 400, message = "Erro ao atualizar o valor")
+    })
     public ResponseEntity atualizar(
             @PathVariable("id") Long id,
             @RequestBody ValorDiarioMultaDTO dto) {
@@ -83,6 +94,11 @@ public class ValorDiarioMultaController {
     }
 
     @DeleteMapping("/{id}")
+    @ApiOperation("Deleta um valor")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Valor deletado"),
+            @ApiResponse(code = 404, message = "Valor não deletado")
+    })
     public ResponseEntity excluir(
             @PathVariable("id") Long id) {
         Optional<ValorDiarioMulta> valorDiarioMulta = service.getValorDiarioMultaById(id);

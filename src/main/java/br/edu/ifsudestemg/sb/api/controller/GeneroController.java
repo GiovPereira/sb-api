@@ -27,6 +27,11 @@ public class GeneroController {
     private final GeneroService service;
 
     @GetMapping()
+    @ApiOperation("Obter gêneros")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Gêneros listados"),
+            @ApiResponse(code = 404, message = "Gêneros não listados")
+    })
     public ResponseEntity get() {
         List<Genero> generos = service.getGeneros();
         return ResponseEntity.ok(generos.stream().map(GeneroDTO::create).collect(Collectors.toList()));
@@ -63,6 +68,11 @@ public class GeneroController {
     }
 
     @PutMapping("{id}")
+    @ApiOperation("Atualizar o gênero")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Gênero atualizado"),
+            @ApiResponse(code = 404, message = "Gênero não atualizado")
+    })
     public ResponseEntity atualizar(@PathVariable("id") Long id, @RequestBody GeneroDTO dto) {
         if (!service.getGeneroById(id).isPresent()) {
             return new ResponseEntity("Genero não encontrado", HttpStatus.NOT_FOUND);
@@ -78,6 +88,11 @@ public class GeneroController {
     }
 
     @DeleteMapping("{id}")
+    @ApiOperation("Deleta um gênero")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Gênero deletado"),
+            @ApiResponse(code = 404, message = "Gênero não deletado")
+    })
     public ResponseEntity excluir(@PathVariable("id") Long id) {
         Optional<Genero> genero = service.getGeneroById(id);
         if (!genero.isPresent()) {
