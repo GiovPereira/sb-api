@@ -26,7 +26,7 @@ public class ObraController {
 
     private final ObraService service;
 
-    @GetMapping("/{id}")
+    @GetMapping()
     @ApiOperation("Obter obras")
     @ApiResponses({
             @ApiResponse(code = 200, message = "Obras encontradas"),

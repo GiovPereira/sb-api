@@ -28,7 +28,7 @@ public class StatusExemplarController {
         this.service = service;
     }
 
-    @GetMapping("/{id}")
+    @GetMapping()
     @ApiOperation("Obter status de exemplares")
     @ApiResponses({
             @ApiResponse(code = 200, message = "Status de exemplares encontrados"),

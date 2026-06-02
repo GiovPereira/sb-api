@@ -26,7 +26,7 @@ public class ObraAutorController {
 
     private final ObraAutorService service;
 
-    @GetMapping("/{id}")
+    @GetMapping()
     @ApiOperation("Obter detalhes de autores da obra")
     @ApiResponses({
             @ApiResponse(code = 200, message = "Autor da obra encontrado"),

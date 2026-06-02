@@ -70,7 +70,7 @@ public class SecaoController {
         }
     }
 
-    @PutMapping("/{id}")
+    @GetMapping()
     @ApiOperation("Atualizar a seção")
     @ApiResponses({
             @ApiResponse(code = 201, message = "Seção atualizada com sucesso"),

@@ -27,7 +27,7 @@ public class IdiomaController {
         this.service = service;
     }
 
-    @GetMapping("/{id}")
+    @GetMapping()
     @ApiOperation("Obter idiomas")
     @ApiResponses({
             @ApiResponse(code = 200, message = "Idiomas encontrados"),

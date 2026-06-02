@@ -26,7 +26,7 @@ public class ValorDiarioMultaController {
         this.service = service;
     }
 
-    @@GetMapping("/{id}")
+    @GetMapping()
     @ApiOperation("Obter valores")
     @ApiResponses({
             @ApiResponse(code = 200, message = "Valores encontrados"),

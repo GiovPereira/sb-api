@@ -26,7 +26,7 @@ public class ObraGeneroController {
 
     private final ObraGeneroService service;
 
-    @GetMapping("/{id}")
+    @GetMapping()
     @ApiOperation("Obter generos da obra")
     @ApiResponses({
             @ApiResponse(code = 200, message = "Generos da obra encontrados"),

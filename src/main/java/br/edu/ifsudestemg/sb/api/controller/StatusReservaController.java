@@ -26,7 +26,7 @@ public class StatusReservaController {
             StatusReservaService service) {this.service = service;
     }
 
-    @GetMapping("/{id}")
+    @GetMapping()
     @ApiOperation("Obter status de reservas")
     @ApiResponses({
             @ApiResponse(code = 200, message = "Status de reservas encontrados"),

@@ -28,7 +28,7 @@ public class ReservaController {
         this.service = service;
     }
 
-    @GetMapping("/{id}")
+    @GetMapping()
     @ApiOperation("Obter reservas")
     @ApiResponses({
             @ApiResponse(code = 200, message = "Reservas encontradas"),
