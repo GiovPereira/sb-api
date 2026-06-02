@@ -29,7 +29,7 @@ public class SecaoController {
 
     private final SecaoService service;
 
-    @GetMapping("/{id}")
+    @GetMapping()
     @ApiOperation("Obter seções")
     @ApiResponses({
             @ApiResponse(code = 200, message = "Seções encontradas"),
@@ -70,7 +70,7 @@ public class SecaoController {
         }
     }
 
-    @GetMapping()
+    @PutMapping("/{id}")
     @ApiOperation("Atualizar a seção")
     @ApiResponses({
             @ApiResponse(code = 201, message = "Seção atualizada com sucesso"),
