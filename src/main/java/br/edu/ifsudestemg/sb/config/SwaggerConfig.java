@@ -47,7 +47,7 @@ public class SwaggerConfig {
     private Contact contact(){
         return new Contact("Maria Tereza e Giovanna"
                 , "https://github.com/GiovPereira/sb-api",
-                "mtereza1999@gmail.com");
+                "mtfnarde@gmail.com");
     }
 
 
