@@ -23,8 +23,7 @@ public class DuracaoPadraoEmprestimoController {
 
     private DuracaoPadraoEmprestimoService service;
 
-    public DuracaoPadraoEmprestimoController(
-            DuracaoPadraoEmprestimoService service) {
+    public DuracaoPadraoEmprestimoController(DuracaoPadraoEmprestimoService service) {
         this.service = service;
     }
 
@@ -35,11 +34,8 @@ public class DuracaoPadraoEmprestimoController {
             @ApiResponse(code = 404, message = "Durações não listados")
     })
     public ResponseEntity get() {
-
-        List<DuracaoPadraoEmprestimo> duracoes = service.getDuracaoPadraoEmprestimos();
-
-        return ResponseEntity.ok(
-                duracoes.stream().map(DuracaoPadraoEmprestimoDTO::create).collect(Collectors.toList()));
+        List<DuracaoPadraoEmprestimo> duracaoPadraoEmprestimos = service.getDuracaoPadraoEmprestimos();
+        return ResponseEntity.ok( duracaoPadraoEmprestimos.stream().map(DuracaoPadraoEmprestimoDTO::create).collect(Collectors.toList()));
     }
 
     @GetMapping("/{id}")
@@ -48,9 +44,9 @@ public class DuracaoPadraoEmprestimoController {
             @ApiResponse(code = 200, message = "Duração encontrada"),
             @ApiResponse(code = 404, message = "Duração não encontrada")
     })
-    public ResponseEntity get(@PathVariable("id") Long id) {
+    public ResponseEntity get(
+            @PathVariable("id") Long id) {
         Optional<DuracaoPadraoEmprestimo> duracao = service.getDuracaoPadraoEmprestimoById(id);
-
         if (!duracao.isPresent()) {
             return new ResponseEntity("Duração não encontrada", HttpStatus.NOT_FOUND);
         }
@@ -67,6 +63,7 @@ public class DuracaoPadraoEmprestimoController {
             @RequestBody DuracaoPadraoEmprestimoDTO dto) {
 
         try {
+            System.out.println("ENTROU NO POST");
             DuracaoPadraoEmprestimo duracao = converter(dto);
             duracao = service.salvar(duracao);
             return new ResponseEntity(DuracaoPadraoEmprestimoDTO.create(duracao), HttpStatus.CREATED);
@@ -123,8 +120,7 @@ public class DuracaoPadraoEmprestimoController {
     }
 
     public DuracaoPadraoEmprestimo converter(
-            DuracaoPadraoEmprestimoDTO dto) {
-        ModelMapper modelMapper = new ModelMapper();
+            DuracaoPadraoEmprestimoDTO dto) {ModelMapper modelMapper = new ModelMapper();
         return modelMapper.map(dto, DuracaoPadraoEmprestimo.class);
     }
 }

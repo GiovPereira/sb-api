@@ -6,14 +6,16 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.modelmapper.ModelMapper;
 
+import java.time.LocalDateTime;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 
 public class DuracaoPadraoEmprestimoDTO {
-    private Long Id;
-    private int diasUteis;
-    private Data dataHoraAlteracao;
+    private Long id;
+    private Integer diasUteis;
+    private LocalDateTime dataHoraAlteracao;
 
     public static DuracaoPadraoEmprestimoDTO create(DuracaoPadraoEmprestimo duracaoPadraoEmprestimo) {
         ModelMapper modelMapper = new ModelMapper();

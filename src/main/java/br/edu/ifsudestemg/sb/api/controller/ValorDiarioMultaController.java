@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 public class ValorDiarioMultaController {
 
     private ValorDiarioMultaService service;
+
     public ValorDiarioMultaController(ValorDiarioMultaService service) {
         this.service = service;
     }
@@ -82,7 +83,6 @@ public class ValorDiarioMultaController {
         if (!service.getValorDiarioMultaById(id).isPresent()) {
             return new ResponseEntity("Valor não encontrado", HttpStatus.NOT_FOUND);
         }
-
         try {
             ValorDiarioMulta valorDiarioMulta = converter(dto);
             valorDiarioMulta.setId(id);
