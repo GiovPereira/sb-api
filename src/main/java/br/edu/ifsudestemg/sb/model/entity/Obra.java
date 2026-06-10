@@ -24,17 +24,4 @@ public class Obra {
 
     @Column(nullable = false)
     private String edicao;
-
-    @ManyToOne
-    private Autor autor;
-
-    @ManyToOne
-    private Editora editora;
-
-    @ManyToOne
-    private Genero genero;
-
-    @ManyToOne(optional = false)
-    @JoinColumn(nullable = false)
-    private Idioma idioma;
 }

@@ -10,18 +10,25 @@ import javax.persistence.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-
-public class ObraEditora
-{
+@Table(
+        name = "obra_editora",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        columnNames = {"obra_id", "editora_id"}
+                )
+        }
+)
+public class ObraEditora {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String Nome;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "obra_id")
     private Obra obra;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "editora_id")
     private Editora editora;
 }

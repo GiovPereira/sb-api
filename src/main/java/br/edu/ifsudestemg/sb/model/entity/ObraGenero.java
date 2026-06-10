@@ -10,18 +10,25 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-
-public class ObraGenero
-{
+@Table(
+        name = "obra_genero",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        columnNames = {"obra_id", "genero_id"}
+                )
+        }
+)
+public class ObraGenero {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String Nome;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "obra_id")
     private Obra obra;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "genero_id")
     private Genero genero;
 }

@@ -15,26 +15,33 @@ public interface ObraIdiomaRepository
         extends JpaRepository<ObraIdioma, Long> {
 
     @Query(
-            "SELECT oa.idioma " +
-                    "FROM ObraIdioma oa " +
-                    "WHERE oa.obra.id = :obraId"
+            "SELECT oi.idioma " +
+                    "FROM ObraIdioma oi " +
+                    "WHERE oi.obra.id = :obraId"
     )
-    List<Idioma> buscarIdiomaesDaObra(
+    List<Idioma> buscarIdiomasDaObra(
             @Param("obraId") Long obraId);
 
     @Query(
-            "SELECT oa.obra " +
-                    "FROM ObraIdioma oa " +
-                    "WHERE oa.idioma.id = :idiomaId"
+            "SELECT oi.obra " +
+                    "FROM ObraIdioma oi " +
+                    "WHERE oi.idioma.id = :idiomaId"
     )
     List<Obra> buscarObrasDoIdioma(
             @Param("idiomaId") Long idiomaId);
+
+    @Query(
+            "SELECT oi.idioma.id " +
+                    "FROM ObraIdioma oi " +
+                    "WHERE oi.obra.id = :obraId"
+    )
+    List<Long> buscarIdsIdiomasDaObra(
+            @Param("obraId") Long obraId);
 
     boolean existsByObra_IdAndIdioma_Id(
             Long obraId,
             Long idiomaId);
 
-    void deleteByObra_IdAndIdioma_Id(
-            Long obraId,
-            Long idiomaId);
+    void deleteByObra_Id(
+            Long obraId);
 }
