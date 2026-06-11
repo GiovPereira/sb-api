@@ -7,36 +7,35 @@ import br.edu.ifsudestemg.sb.service.ReservaService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/reservas")
+@RequiredArgsConstructor
 @CrossOrigin
-
 public class ReservaController {
 
     private final ReservaService service;
 
-    public ReservaController(ReservaService service) {
-        this.service = service;
-    }
-
-    @GetMapping()
+    @GetMapping
     @ApiOperation("Obter reservas")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Reservas encontradas"),
-            @ApiResponse(code = 404, message = "Reservas não encontradas")
+            @ApiResponse(code = 200, message = "Reservas encontradas")
     })
     public ResponseEntity get() {
-        List<Reserva> reservas = service.getReservas();
-        return ResponseEntity.ok(reservas.stream().map(ReservaDTO::create).collect(Collectors.toList()));
+
+        List<ReservaDTO> reservas =
+                service.getReservasDTO();
+
+        return ResponseEntity.ok(
+                reservas
+        );
     }
 
     @GetMapping("/{id}")
@@ -45,84 +44,160 @@ public class ReservaController {
             @ApiResponse(code = 200, message = "Reserva encontrada"),
             @ApiResponse(code = 404, message = "Reserva não encontrada")
     })
-    public ResponseEntity get(@PathVariable("id") Long id) {
-        Optional<Reserva> reserva = service.getReservaById(id);
-        if (!reserva.isPresent()) {
+    public ResponseEntity get(
+            @PathVariable("id") Long id) {
+
+        return service
+                .getReservaById(id)
+                .map(reserva ->
+                        ResponseEntity.ok(
+                                service.createDTO(reserva)
+                        ))
+                .orElseGet(() ->
+                        new ResponseEntity(
+                                "Reserva não encontrada",
+                                HttpStatus.NOT_FOUND
+                        ));
+    }
+
+    @PostMapping
+    @ApiOperation("Salvar reserva")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Reserva salva"),
+            @ApiResponse(code = 400, message = "Erro ao salvar")
+    })
+    public ResponseEntity post(
+            @RequestBody ReservaDTO dto) {
+
+        try {
+
+            Reserva reserva =
+                    converter(dto);
+
+            reserva =
+                    service.salvar(
+                            reserva,
+                            dto.getIdCliente(),
+                            dto.getIdObra()
+                    );
+
+            return new ResponseEntity(
+                    service.createDTO(
+                            reserva
+                    ),
+                    HttpStatus.CREATED
+            );
+
+        } catch (RegraNegocioException e) {
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(
+                            e.getMessage()
+                    );
+        }
+    }
+
+    @PutMapping("/{id}")
+    @ApiOperation("Atualizar reserva")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Reserva atualizada"),
+            @ApiResponse(code = 404, message = "Reserva não encontrada"),
+            @ApiResponse(code = 400, message = "Erro ao atualizar")
+    })
+    public ResponseEntity atualizar(
+            @PathVariable("id") Long id,
+            @RequestBody ReservaDTO dto) {
+
+        if (!service.getReservaById(id).isPresent()) {
+
             return new ResponseEntity(
                     "Reserva não encontrada",
                     HttpStatus.NOT_FOUND
             );
         }
-        return ResponseEntity.ok(
-                reserva.map(ReservaDTO::create)
-        );
-    }
-
-    @PostMapping()
-    @ApiOperation("Salva uma nova reserva")
-    @ApiResponses({
-            @ApiResponse(code = 201, message = "Reserva salvo com sucesso"),
-            @ApiResponse(code = 400, message = "Erro ao salvar o reserva")
-    })
-    public ResponseEntity post(@RequestBody ReservaDTO dto) {
 
         try {
-            Reserva reserva = converter(dto);
-            reserva = service.salvar(reserva);
-            return new ResponseEntity(
-                    ReservaDTO.create(reserva),
-                    HttpStatus.CREATED
+
+            Reserva reserva =
+                    converter(dto);
+
+            reserva.setId(id);
+
+            reserva =
+                    service.atualizar(
+                            reserva,
+                            dto.getIdCliente(),
+                            dto.getIdObra()
+                    );
+
+            return ResponseEntity.ok(
+                    service.createDTO(
+                            reserva
+                    )
             );
+
         } catch (RegraNegocioException e) {
+
             return ResponseEntity
                     .badRequest()
-                    .body(e.getMessage());
-        }
-    }
-
-    @PutMapping("/{id}")
-    @ApiOperation("Atualizar a reserva")
-    @ApiResponses({
-            @ApiResponse(code = 201, message = "Reserva atualizado com sucesso"),
-            @ApiResponse(code = 400, message = "Erro ao atualizar a reserva")
-    })
-    public ResponseEntity atualizar(
-            @PathVariable("id") Long id,
-            @RequestBody ReservaDTO dto) {
-        if (!service.getReservaById(id).isPresent()) {
-            return new ResponseEntity("Reserva não encontrada", HttpStatus.NOT_FOUND);
-        }
-        try {
-            Reserva reserva = converter(dto);
-            reserva.setId(id);
-            reserva = service.salvar(reserva);
-            return ResponseEntity.ok(ReservaDTO.create(reserva));
-        } catch (RegraNegocioException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+                    .body(
+                            e.getMessage()
+                    );
         }
     }
 
     @DeleteMapping("/{id}")
-    @ApiOperation("Deleta uma reserva")
+    @ApiOperation("Excluir reserva")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Reserva deletada"),
-            @ApiResponse(code = 404, message = "Reserva não deletada")
+            @ApiResponse(code = 204, message = "Reserva excluída"),
+            @ApiResponse(code = 404, message = "Reserva não encontrada"),
+            @ApiResponse(code = 400, message = "Erro ao excluir")
     })
-    public ResponseEntity excluir(@PathVariable("id") Long id) {
-        Optional<Reserva> reserva = service.getReservaById(id);
-        if (!reserva.isPresent()) {
-            return new ResponseEntity("Reserva não encontrada", HttpStatus.NOT_FOUND);
-        }
-        try {
-            service.excluir(reserva.get());
-            return new ResponseEntity(HttpStatus.NO_CONTENT);
-        } catch (RegraNegocioException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity excluir(
+            @PathVariable("id") Long id) {
+
+        return service
+                .getReservaById(id)
+                .map(reserva -> {
+
+                    try {
+
+                        service.excluir(
+                                reserva
+                        );
+
+                        return new ResponseEntity(
+                                HttpStatus.NO_CONTENT
+                        );
+
+                    } catch (RegraNegocioException e) {
+
+                        return ResponseEntity
+                                .badRequest()
+                                .body(
+                                        e.getMessage()
+                                );
+                    }
+
+                })
+                .orElseGet(() ->
+                        new ResponseEntity(
+                                "Reserva não encontrada",
+                                HttpStatus.NOT_FOUND
+                        ));
     }
 
-    public Reserva converter(ReservaDTO dto) {
-        ModelMapper modelMapper = new ModelMapper();
-        return modelMapper.map(dto, Reserva.class);
+    private Reserva converter(
+            ReservaDTO dto) {
+
+        ModelMapper modelMapper =
+                new ModelMapper();
+
+        return modelMapper.map(
+                dto,
+                Reserva.class
+        );
     }
+
 }

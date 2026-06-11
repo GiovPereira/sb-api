@@ -1,8 +1,7 @@
 package br.edu.ifsudestemg.sb.api.controller;
 
-import br.edu.ifsudestemg.sb.exception.RegraNegocioException;
-
 import br.edu.ifsudestemg.sb.api.dto.EmprestimoDTO;
+import br.edu.ifsudestemg.sb.exception.RegraNegocioException;
 import br.edu.ifsudestemg.sb.model.entity.Emprestimo;
 import br.edu.ifsudestemg.sb.service.EmprestimoService;
 import io.swagger.annotations.ApiOperation;
@@ -14,9 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/emprestimos")
@@ -26,89 +24,203 @@ public class EmprestimoController {
 
     private final EmprestimoService service;
 
-    @GetMapping()
+    @GetMapping
     @ApiOperation("Obter empréstimos")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Empréstimos listados"),
-            @ApiResponse(code = 404, message = "Empréstimos não listados")
+            @ApiResponse(code = 200, message = "Empréstimos encontrados")
     })
     public ResponseEntity get() {
-        List<Emprestimo> emprestimos = service.getEmprestimos();
-        return ResponseEntity.ok(emprestimos.stream().map(EmprestimoDTO::create).collect(Collectors.toList()));
+
+        List<EmprestimoDTO> emprestimos =
+                service.getEmprestimosDTO();
+
+        return ResponseEntity.ok(emprestimos);
     }
 
     @GetMapping("/{id}")
-    @ApiOperation("Obter detalhes de um emprestimo")
+    @ApiOperation("Obter detalhes de um empréstimo")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Emprestimo encontrado"),
-            @ApiResponse(code = 404, message = "Emprestimo não encontrado")
+            @ApiResponse(code = 200, message = "Empréstimo encontrado"),
+            @ApiResponse(code = 404, message = "Empréstimo não encontrado")
     })
     public ResponseEntity get(@PathVariable("id") Long id) {
-        Optional<Emprestimo> emprestimo = service.getEmprestimoById(id);
+
+        Optional<Emprestimo> emprestimo =
+                service.getEmprestimoById(id);
+
         if (!emprestimo.isPresent()) {
-            return new ResponseEntity("Emprestimo não encontrado", HttpStatus.NOT_FOUND);
+
+            return new ResponseEntity(
+                    "Empréstimo não encontrado",
+                    HttpStatus.NOT_FOUND
+            );
         }
-        return ResponseEntity.ok(emprestimo.map(EmprestimoDTO::create));
+
+        EmprestimoDTO dto =
+                service.createDTO(
+                        emprestimo.get()
+                );
+
+        return ResponseEntity.ok(dto);
     }
 
-    @PostMapping()
-    @ApiOperation("Salva um novo emprestimo")
+    @PostMapping
+    @ApiOperation("Salvar empréstimo")
     @ApiResponses({
-            @ApiResponse(code = 201, message = "Emprestimo salvo com sucesso"),
-            @ApiResponse(code = 400, message = "Erro ao salvar o emprestimo")
+            @ApiResponse(code = 201, message = "Empréstimo salvo"),
+            @ApiResponse(code = 400, message = "Erro ao salvar")
     })
-    public ResponseEntity post(@RequestBody EmprestimoDTO dto) {
+    public ResponseEntity post(
+            @RequestBody EmprestimoDTO dto) {
+
         try {
-            Emprestimo emprestimo = converter(dto);
-            emprestimo = service.salvar(emprestimo);
-            return new ResponseEntity(emprestimo, HttpStatus.CREATED);
+
+            Emprestimo emprestimo =
+                    converter(dto);
+
+            emprestimo =
+                    service.salvar(
+                            emprestimo,
+                            dto.getIdCliente(),
+                            dto.getIdExemplar()
+                    );
+
+            return new ResponseEntity(
+                    service.createDTO(
+                            emprestimo
+                    ),
+                    HttpStatus.CREATED
+            );
+
         } catch (RegraNegocioException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(e.getMessage());
         }
     }
 
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
     @ApiOperation("Atualizar empréstimo")
     @ApiResponses({
             @ApiResponse(code = 200, message = "Empréstimo atualizado"),
-            @ApiResponse(code = 404, message = "Empréstimo não atualizado")
+            @ApiResponse(code = 404, message = "Empréstimo não encontrado")
     })
-    public ResponseEntity atualizar(@PathVariable("id") Long id, @RequestBody EmprestimoDTO dto) {
+    public ResponseEntity atualizar(
+            @PathVariable("id") Long id,
+            @RequestBody EmprestimoDTO dto) {
+
         if (!service.getEmprestimoById(id).isPresent()) {
-            return new ResponseEntity("Emprestimo não encontrado", HttpStatus.NOT_FOUND);
+
+            return new ResponseEntity(
+                    "Empréstimo não encontrado",
+                    HttpStatus.NOT_FOUND
+            );
         }
+
         try {
-            Emprestimo emprestimo = converter(dto);
+
+            Emprestimo emprestimo =
+                    converter(dto);
+
             emprestimo.setId(id);
-            service.salvar(emprestimo);
-            return ResponseEntity.ok(emprestimo);
+
+            emprestimo =
+                    service.atualizar(
+                            emprestimo,
+                            dto.getIdCliente(),
+                            dto.getIdExemplar()
+                    );
+
+            return ResponseEntity.ok(
+                    service.createDTO(
+                            emprestimo
+                    )
+            );
+
         } catch (RegraNegocioException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(e.getMessage());
         }
     }
 
-    @DeleteMapping("{id}")
-    @ApiOperation("Deleta um emprestimo")
+    @DeleteMapping("/{id}")
+    @ApiOperation("Excluir empréstimo")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Emprestimo deletado"),
-            @ApiResponse(code = 404, message = "Emprestimo não deletado")
+            @ApiResponse(code = 204, message = "Empréstimo excluído"),
+            @ApiResponse(code = 404, message = "Empréstimo não encontrado")
     })
-    public ResponseEntity excluir(@PathVariable("id") Long id) {
-        Optional<Emprestimo> emprestimo = service.getEmprestimoById(id);
+    public ResponseEntity excluir(
+            @PathVariable("id") Long id) {
+
+        Optional<Emprestimo> emprestimo =
+                service.getEmprestimoById(id);
+
         if (!emprestimo.isPresent()) {
-            return new ResponseEntity("Emprestimo não encontrado", HttpStatus.NOT_FOUND);
+
+            return new ResponseEntity(
+                    "Empréstimo não encontrado",
+                    HttpStatus.NOT_FOUND
+            );
         }
+
         try {
-            service.excluir(emprestimo.get());
-            return new ResponseEntity(HttpStatus.NO_CONTENT);
+
+            service.excluir(
+                    emprestimo.get()
+            );
+
+            return new ResponseEntity(
+                    HttpStatus.NO_CONTENT
+            );
+
         } catch (RegraNegocioException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(e.getMessage());
         }
     }
 
-    public Emprestimo converter(EmprestimoDTO dto) {
-        ModelMapper modelMapper = new ModelMapper();
-        Emprestimo emprestimo = modelMapper.map(dto, Emprestimo.class);
-        return emprestimo;
+    @PatchMapping("/{id}/entrega")
+    @ApiOperation("Registrar entrega do empréstimo")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Entrega registrada"),
+            @ApiResponse(code = 404, message = "Empréstimo não encontrado")
+    })
+    public ResponseEntity registrarEntrega(
+            @PathVariable("id") Long id) {
+
+        try {
+
+            Emprestimo emprestimo =
+                    service.registrarEntrega(id);
+
+            return ResponseEntity.ok(
+                    service.createDTO(
+                            emprestimo
+                    )
+            );
+
+        } catch (RegraNegocioException e) {
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(e.getMessage());
+        }
+    }
+
+    private Emprestimo converter(
+            EmprestimoDTO dto) {
+
+        ModelMapper modelMapper =
+                new ModelMapper();
+
+        return modelMapper.map(
+                dto,
+                Emprestimo.class
+        );
     }
 }

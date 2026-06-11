@@ -6,13 +6,26 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
-public interface ReservaRepository extends JpaRepository<Reserva, Long> {
+public interface ReservaRepository
+        extends JpaRepository<Reserva, Long> {
 
-    List<Reserva> findByObraOrderByPosicaoFilaAsc(Obra obra);
+    List<Reserva> findByObraOrderByPosicaoFilaAsc(
+            Obra obra
+    );
 
-    boolean existsByClienteIdAndObraId(Long clienteId, Long obraId);
+    Optional<Reserva> findTopByObraOrderByPosicaoFilaDesc(
+            Obra obra
+    );
 
-    Integer countByObra(Obra obra);
+    boolean existsByClienteIdAndObraId(
+            Long clienteId,
+            Long obraId
+    );
+
+    Integer countByObra(
+            Obra obra
+    );
 }

@@ -41,7 +41,7 @@ public class ValorDiarioMultaService {
     }
 
     public ValorDiarioMulta obterValorAtual() {
-        return repository.findTopByOrderByDataHoraAlteracaoDesc()
+        return repository.findTopByOrderByIdDesc()
                 .orElseThrow(() ->
                         new RegraNegocioException("Nenhum valor de multa cadastrado"));
     }

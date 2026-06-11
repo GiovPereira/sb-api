@@ -28,7 +28,7 @@ public class DuracaoPadraoEmprestimoService {
     }
 
     public DuracaoPadraoEmprestimo obterAtual() {
-        return repository.findTopByOrderByDataHoraAlteracaoDesc()
+        return repository.findTopByOrderByIdDesc()
                 .orElseThrow(() ->
                         new RegraNegocioException(
                                 "Nenhuma duração cadastrada"));

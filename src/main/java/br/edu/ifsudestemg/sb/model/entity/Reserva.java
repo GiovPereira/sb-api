@@ -6,6 +6,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -18,7 +19,12 @@ public class Reserva {
     private Long id;
 
     @Column(nullable = false)
-    private LocalDate dataReserva;
+    private LocalDateTime dataHoraReserva;
+
+    @Column(nullable = false)
+    private LocalDate dataMaximaPrevistaColeta;
+
+    private LocalDateTime dataHoraColetaEfetiva;
 
     @Column(nullable = false)
     private Integer posicaoFila;
@@ -36,6 +42,10 @@ public class Reserva {
     private Exemplar exemplar;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "status_id")
-    private StatusReserva status;
+    @JoinColumn(name = "status_reserva_id")
+    private StatusReserva statusReserva;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "duracao_padrao_reserva_id")
+    private DuracaoPadraoReserva duracaoPadraoReserva;
 }
