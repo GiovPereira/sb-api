@@ -16,5 +16,11 @@ public class Autor {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, unique = true, length = 50)
     private String nome;
+
+    public Autor(String nome) {
+        this.nome = nome;
+    }
 }
