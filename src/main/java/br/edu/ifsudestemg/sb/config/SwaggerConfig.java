@@ -30,8 +30,8 @@ public class SwaggerConfig {
                         .basePackage("br.edu.ifsudestemg.sb.api.controller"))
                 .paths(PathSelectors.any())
                 .build()
-//                .securityContexts(Arrays.asList(securityContext()))
-//                .securitySchemes(Arrays.asList(apiKey()))
+                .securityContexts(Arrays.asList(securityContext()))
+                .securitySchemes(Arrays.asList(apiKey()))
                 .apiInfo(apiInfo());
     }
 
