@@ -35,13 +35,8 @@ public class EmprestimoService {
     private final DuracaoPadraoEmprestimoRepository duracaoRepository;
     private final ValorDiarioMultaRepository valorMultaRepository;
 
-    public EmprestimoService(
-            EmprestimoRepository repository,
-            ClienteRepository clienteRepository,
-            ExemplarRepository exemplarRepository,
-            DuracaoPadraoEmprestimoRepository duracaoRepository,
-            ValorDiarioMultaRepository valorMultaRepository) {
-
+    public EmprestimoService(EmprestimoRepository repository, ClienteRepository clienteRepository, ExemplarRepository exemplarRepository,
+                             DuracaoPadraoEmprestimoRepository duracaoRepository, ValorDiarioMultaRepository valorMultaRepository) {
         this.repository = repository;
         this.clienteRepository = clienteRepository;
         this.exemplarRepository = exemplarRepository;
@@ -54,12 +49,7 @@ public class EmprestimoService {
     }
 
     public List<EmprestimoDTO> getEmprestimosDTO() {
-
-        return repository
-                .findAll()
-                .stream()
-                .map(this::createDTO)
-                .collect(Collectors.toList());
+        return repository.findAll().stream().map(this::createDTO).collect(Collectors.toList());
     }
 
     public Optional<Emprestimo> getEmprestimoById(Long id) {
@@ -67,286 +57,121 @@ public class EmprestimoService {
     }
 
     public EmprestimoDTO createDTO(Emprestimo emprestimo) {
-
         atualizarMulta(emprestimo);
 
         ModelMapper modelMapper = new ModelMapper();
-
-        EmprestimoDTO dto =
-                modelMapper.map(
-                        emprestimo,
-                        EmprestimoDTO.class
-                );
+        EmprestimoDTO dto = modelMapper.map(emprestimo, EmprestimoDTO.class);
 
         if (emprestimo.getCliente() != null) {
-
-            dto.setIdCliente(
-                    emprestimo.getCliente().getId()
-            );
-
-            dto.setNomeCliente(
-                    emprestimo.getCliente().getNome()
-            );
+            dto.setIdCliente(emprestimo.getCliente().getId());
+            dto.setNomeCliente(emprestimo.getCliente().getNome());
         }
-
         if (emprestimo.getExemplar() != null) {
-
-            dto.setIdExemplar(
-                    emprestimo.getExemplar().getId()
-            );
-
+            dto.setIdExemplar(emprestimo.getExemplar().getId());
             if (emprestimo.getExemplar().getObra() != null) {
-
-                dto.setTituloObra(
-                        emprestimo.getExemplar()
-                                .getObra()
-                                .getTitulo()
-                );
+                dto.setTituloObra(emprestimo.getExemplar().getObra().getTitulo());
             }
         }
-
         if (emprestimo.getDuracaoPadraoEmprestimo() != null) {
-
-            dto.setIdDuracaoPadraoEmprestimo(
-                    emprestimo.getDuracaoPadraoEmprestimo().getId()
-            );
-
-            dto.setDiasUteis(
-                    emprestimo.getDuracaoPadraoEmprestimo().getDiasUteis()
-            );
+            dto.setIdDuracaoPadraoEmprestimo(emprestimo.getDuracaoPadraoEmprestimo().getId());
+            dto.setDiasUteis(emprestimo.getDuracaoPadraoEmprestimo().getDiasUteis());
         }
-
         if (emprestimo.getValorDiarioMulta() != null) {
-
-            dto.setIdValorDiarioMulta(
-                    emprestimo.getValorDiarioMulta().getId()
-            );
-
-            dto.setValorDia(
-                    emprestimo.getValorDiarioMulta().getValorDia()
-            );
+            dto.setIdValorDiarioMulta(emprestimo.getValorDiarioMulta().getId());
+            dto.setValorDia(emprestimo.getValorDiarioMulta().getValorDia());
         }
-
         return dto;
     }
 
     @Transactional
-    public Emprestimo salvar(
-            Emprestimo emprestimo,
-            Long idCliente,
-            Long idExemplar) {
+    public Emprestimo salvar(Emprestimo emprestimo, Long idCliente, Long idExemplar) {
+        Cliente cliente = clienteRepository.findById(idCliente)
+                .orElseThrow(() -> new RegraNegocioException("Cliente não encontrado."));
 
-        Cliente cliente =
-                clienteRepository.findById(idCliente)
-                        .orElseThrow(() ->
-                                new RegraNegocioException(
-                                        "Cliente não encontrado."
-                                ));
+        Exemplar exemplar = exemplarRepository.findById(idExemplar)
+                .orElseThrow(() -> new RegraNegocioException("Exemplar não encontrado."));
 
-        Exemplar exemplar =
-                exemplarRepository.findById(idExemplar)
-                        .orElseThrow(() ->
-                                new RegraNegocioException(
-                                        "Exemplar não encontrado."
-                                ));
+        DuracaoPadraoEmprestimo duracao = duracaoRepository.findTopByOrderByIdDesc()
+                .orElseThrow(() -> new RegraNegocioException("Nenhuma duração padrão cadastrada."));
 
-        DuracaoPadraoEmprestimo duracao =
-                duracaoRepository
-                        .findTopByOrderByIdDesc()
-                        .orElseThrow(() ->
-                                new RegraNegocioException(
-                                        "Nenhuma duração padrão cadastrada."
-                                ));
-
-        ValorDiarioMulta valorMulta =
-                valorMultaRepository
-                        .findTopByOrderByIdDesc()
-                        .orElseThrow(() ->
-                                new RegraNegocioException(
-                                        "Nenhum valor de multa cadastrado."
-                                ));
+        ValorDiarioMulta valorMulta = valorMultaRepository.findTopByOrderByIdDesc()
+                .orElseThrow(() -> new RegraNegocioException("Nenhum valor de multa cadastrado."));
 
         emprestimo.setCliente(cliente);
-
         emprestimo.setExemplar(exemplar);
-
         emprestimo.setDuracaoPadraoEmprestimo(duracao);
-
         emprestimo.setValorDiarioMulta(valorMulta);
-
-        emprestimo.setDataHoraEmprestimo(
-                LocalDateTime.now()
-        );
-
-        emprestimo.setDataPrevistaDevolucao(
-                emprestimo.getDataHoraEmprestimo()
-                        .toLocalDate()
-                        .plusDays(
-                                duracao.getDiasUteis()
-                        )
-        );
-
+        emprestimo.setDataHoraEmprestimo(LocalDateTime.now());
+        emprestimo.setDataPrevistaDevolucao(emprestimo.getDataHoraEmprestimo().toLocalDate().plusDays(duracao.getDiasUteis()));
         emprestimo.setDataHoraEntrega(null);
-
         emprestimo.setMulta(BigDecimal.ZERO);
 
         validar(emprestimo);
-
         return repository.save(emprestimo);
     }
 
     @Transactional
-    public Emprestimo atualizar(
-            Emprestimo emprestimo,
-            Long idCliente,
-            Long idExemplar) {
+    public Emprestimo atualizar(Emprestimo emprestimo, Long idCliente, Long idExemplar) {
+        Cliente cliente = clienteRepository.findById(idCliente)
+                .orElseThrow(() -> new RegraNegocioException("Cliente não encontrado."));
 
-        Cliente cliente =
-                clienteRepository.findById(idCliente)
-                        .orElseThrow(() ->
-                                new RegraNegocioException(
-                                        "Cliente não encontrado."
-                                ));
+        Exemplar exemplar = exemplarRepository.findById(idExemplar)
+                .orElseThrow(() -> new RegraNegocioException("Exemplar não encontrado."));
 
-        Exemplar exemplar =
-                exemplarRepository.findById(idExemplar)
-                        .orElseThrow(() ->
-                                new RegraNegocioException(
-                                        "Exemplar não encontrado."
-                                ));
-
-        Emprestimo original =
-                repository.findById(emprestimo.getId())
-                        .orElseThrow(() ->
-                                new RegraNegocioException(
-                                        "Empréstimo não encontrado."
-                                ));
+        Emprestimo original = repository.findById(emprestimo.getId())
+                .orElseThrow(() -> new RegraNegocioException("Empréstimo não encontrado."));
 
         emprestimo.setCliente(cliente);
-
         emprestimo.setExemplar(exemplar);
-
-        emprestimo.setDuracaoPadraoEmprestimo(
-                original.getDuracaoPadraoEmprestimo()
-        );
-
-        emprestimo.setValorDiarioMulta(
-                original.getValorDiarioMulta()
-        );
-
-        emprestimo.setDataHoraEmprestimo(
-                original.getDataHoraEmprestimo()
-        );
-
-        emprestimo.setDataPrevistaDevolucao(
-                original.getDataPrevistaDevolucao()
-        );
+        emprestimo.setDuracaoPadraoEmprestimo(original.getDuracaoPadraoEmprestimo());
+        emprestimo.setValorDiarioMulta(original.getValorDiarioMulta());
+        emprestimo.setDataHoraEmprestimo(original.getDataHoraEmprestimo());
+        emprestimo.setDataPrevistaDevolucao(original.getDataPrevistaDevolucao());
 
         atualizarMulta(emprestimo);
-
         validar(emprestimo);
-
         return repository.save(emprestimo);
     }
 
     @Transactional
     public Emprestimo registrarEntrega(Long idEmprestimo) {
-
-        Emprestimo emprestimo =
-                repository.findById(idEmprestimo)
-                        .orElseThrow(() ->
-                                new RegraNegocioException(
-                                        "Empréstimo não encontrado."
-                                ));
+        Emprestimo emprestimo = repository.findById(idEmprestimo)
+                .orElseThrow(() -> new RegraNegocioException("Empréstimo não encontrado."));
 
         atualizarMulta(emprestimo);
-
-        emprestimo.setDataHoraEntrega(
-                LocalDateTime.now()
-        );
-
+        emprestimo.setDataHoraEntrega(LocalDateTime.now());
         return repository.save(emprestimo);
     }
 
     @Transactional
     public void excluir(Emprestimo emprestimo) {
-
-        Objects.requireNonNull(
-                emprestimo.getId()
-        );
-
+        Objects.requireNonNull(emprestimo.getId());
         try {
-
             repository.delete(emprestimo);
-
             repository.flush();
-
         } catch (DataIntegrityViolationException e) {
-
-            throw new RegraNegocioException(
-                    "Não foi possível excluir o empréstimo."
-            );
+            throw new RegraNegocioException("Não foi possível excluir o empréstimo.");
         }
     }
 
     private void atualizarMulta(Emprestimo emprestimo) {
-
-        if (emprestimo.getDataHoraEntrega() != null) {
-            return;
-        }
+        if (emprestimo.getDataHoraEntrega() != null) return;
 
         LocalDate hoje = LocalDate.now();
-
-        if (!hoje.isAfter(
-                emprestimo.getDataPrevistaDevolucao())) {
-
+        if (!hoje.isAfter(emprestimo.getDataPrevistaDevolucao())) {
             emprestimo.setMulta(BigDecimal.ZERO);
-
             return;
         }
 
-        long diasAtraso =
-                ChronoUnit.DAYS.between(
-                        emprestimo.getDataPrevistaDevolucao(),
-                        hoje
-                );
-
-        BigDecimal multa =
-                emprestimo.getValorDiarioMulta()
-                        .getValorDia()
-                        .multiply(
-                                BigDecimal.valueOf(
-                                        diasAtraso
-                                )
-                        );
-
+        long diasAtraso = ChronoUnit.DAYS.between(emprestimo.getDataPrevistaDevolucao(), hoje);
+        BigDecimal multa = emprestimo.getValorDiarioMulta().getValorDia().multiply(BigDecimal.valueOf(diasAtraso));
         emprestimo.setMulta(multa);
     }
 
     public void validar(Emprestimo emprestimo) {
-
-        if (emprestimo.getCliente() == null) {
-            throw new RegraNegocioException(
-                    "Informe o cliente."
-            );
-        }
-
-        if (emprestimo.getExemplar() == null) {
-            throw new RegraNegocioException(
-                    "Informe o exemplar."
-            );
-        }
-
-        if (emprestimo.getDuracaoPadraoEmprestimo() == null) {
-            throw new RegraNegocioException(
-                    "Duração padrão não encontrada."
-            );
-        }
-
-        if (emprestimo.getValorDiarioMulta() == null) {
-            throw new RegraNegocioException(
-                    "Valor da multa não encontrado."
-            );
-        }
+        if (emprestimo.getCliente() == null) throw new RegraNegocioException("Informe o cliente.");
+        if (emprestimo.getExemplar() == null) throw new RegraNegocioException("Informe o exemplar.");
+        if (emprestimo.getDuracaoPadraoEmprestimo() == null) throw new RegraNegocioException("Duração padrão não encontrada.");
+        if (emprestimo.getValorDiarioMulta() == null) throw new RegraNegocioException("Valor da multa não encontrado.");
     }
 }
