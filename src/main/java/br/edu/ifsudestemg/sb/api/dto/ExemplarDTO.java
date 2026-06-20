@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.modelmapper.ModelMapper;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
@@ -14,7 +14,9 @@ import java.time.LocalDateTime;
 public class ExemplarDTO {
 
     private Long id;
-    private LocalDateTime dataHoraAquisicao;
+    private String tombo;
+    private String codigoBarras;
+    private LocalDate dataAquisicao;
 
     private Long idObra;
     private Long idStatusExemplar;

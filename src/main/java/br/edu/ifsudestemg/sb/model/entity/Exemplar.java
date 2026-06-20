@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
 @Data
@@ -17,7 +17,13 @@ public class Exemplar {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private LocalDateTime dataHoraAquisicao;
+    @Column(nullable = false, unique = true, length = 9)
+    private String tombo;
+
+    @Column(nullable = false, unique = true, length = 100)
+    private String codigoBarras;
+
+    private LocalDate dataAquisicao;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "obra_id", nullable = false)
