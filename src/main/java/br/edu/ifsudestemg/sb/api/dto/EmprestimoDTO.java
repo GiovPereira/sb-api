@@ -32,12 +32,17 @@ public class EmprestimoDTO {
     private String nomeCliente;
     private String tituloObra;
 
+    private String tomboExemplar;
+    private String codigoBarrasExemplar;
+
     private Integer diasUteis;
     private BigDecimal valorDia;
 
-    public static EmprestimoDTO create(Emprestimo emprestimo) {
+    public static EmprestimoDTO create(
+            Emprestimo emprestimo) {
 
-        ModelMapper modelMapper = new ModelMapper();
+        ModelMapper modelMapper =
+                new ModelMapper();
 
         EmprestimoDTO dto =
                 modelMapper.map(
@@ -62,6 +67,14 @@ public class EmprestimoDTO {
                     emprestimo.getExemplar().getId()
             );
 
+            dto.setTomboExemplar(
+                    emprestimo.getExemplar().getTombo()
+            );
+
+            dto.setCodigoBarrasExemplar(
+                    emprestimo.getExemplar().getCodigoBarras()
+            );
+
             if (emprestimo.getExemplar().getObra() != null) {
 
                 dto.setTituloObra(
@@ -69,7 +82,6 @@ public class EmprestimoDTO {
                                 .getObra()
                                 .getTitulo()
                 );
-
             }
         }
 

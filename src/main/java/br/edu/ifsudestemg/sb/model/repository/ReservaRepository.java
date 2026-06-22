@@ -9,8 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ReservaRepository
-        extends JpaRepository<Reserva, Long> {
+public interface ReservaRepository extends JpaRepository<Reserva, Long> {
 
     List<Reserva> findByObraOrderByPosicaoFilaAsc(
             Obra obra
@@ -27,5 +26,19 @@ public interface ReservaRepository
 
     Integer countByObra(
             Obra obra
+    );
+
+    List<Reserva> findByObraIdAndStatusReservaIdOrderByPosicaoFilaAsc(
+            Long obraId,
+            Long statusReservaId
+    );
+
+    List<Reserva> findByStatusReservaId(
+            Long statusReservaId
+    );
+
+    boolean existsByObraIdAndStatusReservaId(
+            Long obraId,
+            Long statusReservaId
     );
 }

@@ -34,41 +34,78 @@ public class ReservaDTO {
     private String tituloObra;
     private String nomeStatusReserva;
 
+    private String tomboExemplar;
+    private String codigoBarrasExemplar;
+
     private Integer diasUteisDuracao;
 
     public ReservaDTO createDTO(Reserva reserva) {
 
         ModelMapper modelMapper = new ModelMapper();
 
-        ReservaDTO dto = modelMapper.map(reserva, ReservaDTO.class);
+        ReservaDTO dto =
+                modelMapper.map(
+                        reserva,
+                        ReservaDTO.class
+                );
 
         if (reserva.getCliente() != null) {
 
-            dto.setIdCliente(reserva.getCliente().getId());
-            dto.setNomeCliente(reserva.getCliente().getNome());
+            dto.setIdCliente(
+                    reserva.getCliente().getId()
+            );
+
+            dto.setNomeCliente(
+                    reserva.getCliente().getNome()
+            );
         }
 
         if (reserva.getObra() != null) {
 
-            dto.setIdObra(reserva.getObra().getId());
-            dto.setTituloObra(reserva.getObra().getTitulo());
+            dto.setIdObra(
+                    reserva.getObra().getId()
+            );
+
+            dto.setTituloObra(
+                    reserva.getObra().getTitulo()
+            );
         }
 
         if (reserva.getExemplar() != null) {
 
-            dto.setIdExemplar(reserva.getExemplar().getId());
+            dto.setIdExemplar(
+                    reserva.getExemplar().getId()
+            );
+
+            dto.setTomboExemplar(
+                    reserva.getExemplar().getTombo()
+            );
+
+            dto.setCodigoBarrasExemplar(
+                    reserva.getExemplar().getCodigoBarras()
+            );
         }
 
         if (reserva.getStatusReserva() != null) {
 
-            dto.setIdStatusReserva(reserva.getStatusReserva().getId());
-            dto.setNomeStatusReserva(reserva.getStatusReserva().getNome());
+            dto.setIdStatusReserva(
+                    reserva.getStatusReserva().getId()
+            );
+
+            dto.setNomeStatusReserva(
+                    reserva.getStatusReserva().getNome()
+            );
         }
 
         if (reserva.getDuracaoPadraoReserva() != null) {
 
-            dto.setIdDuracaoPadraoReserva(reserva.getDuracaoPadraoReserva().getId());
-            dto.setDiasUteisDuracao(reserva.getDuracaoPadraoReserva().getDiasUteis());
+            dto.setIdDuracaoPadraoReserva(
+                    reserva.getDuracaoPadraoReserva().getId()
+            );
+
+            dto.setDiasUteisDuracao(
+                    reserva.getDuracaoPadraoReserva().getDiasUteis()
+            );
         }
 
         return dto;

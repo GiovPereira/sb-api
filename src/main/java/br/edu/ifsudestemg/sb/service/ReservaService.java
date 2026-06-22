@@ -1,20 +1,20 @@
 package br.edu.ifsudestemg.sb.service;
 
+import br.edu.ifsudestemg.sb.api.dto.ReservaDTO;
 import br.edu.ifsudestemg.sb.exception.RegraNegocioException;
 import br.edu.ifsudestemg.sb.model.entity.*;
 import br.edu.ifsudestemg.sb.model.repository.*;
+import org.modelmapper.ModelMapper;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import br.edu.ifsudestemg.sb.api.dto.ReservaDTO;
-import org.modelmapper.ModelMapper;
-import java.util.stream.Collectors;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ReservaService {
@@ -55,11 +55,9 @@ public class ReservaService {
                 .collect(Collectors.toList());
     }
 
-    public ReservaDTO createDTO(
-            Reserva reserva) {
+    public ReservaDTO createDTO(Reserva reserva) {
 
-        ModelMapper modelMapper =
-                new ModelMapper();
+        ModelMapper modelMapper = new ModelMapper();
 
         ReservaDTO dto =
                 modelMapper.map(
@@ -195,10 +193,10 @@ public class ReservaService {
 
         StatusReserva statusDisponivel =
                 statusReservaRepository
-                        .findById(3L)
+                        .findById(2L)
                         .orElseThrow(() ->
                                 new RegraNegocioException(
-                                        "Status Disponível para Retirada não encontrado."
+                                        "Status Disponível Para Retirada não encontrado."
                                 ));
 
         Optional<Exemplar> exemplarDisponivel =
@@ -215,10 +213,10 @@ public class ReservaService {
 
             StatusExemplar reservado =
                     statusExemplarRepository
-                            .findById(3L)
+                            .findById(2L)
                             .orElseThrow(() ->
                                     new RegraNegocioException(
-                                            "Status RESERVADO não encontrado."
+                                            "Status Reservado não encontrado."
                                     ));
 
             exemplar.setStatusExemplar(
@@ -275,7 +273,6 @@ public class ReservaService {
                 reserva
         );
     }
-
     @Transactional
     public Reserva atualizar(
             Reserva reserva,
@@ -346,7 +343,7 @@ public class ReservaService {
                                 .findById(1L)
                                 .orElseThrow(() ->
                                         new RegraNegocioException(
-                                                "Status DISPONÍVEL não encontrado."
+                                                "Status Disponível não encontrado."
                                         ));
 
                 exemplar.setStatusExemplar(
@@ -381,7 +378,7 @@ public class ReservaService {
 
         StatusReserva statusExpirada =
                 statusReservaRepository
-                        .findById(4L)
+                        .findById(3L) // Expirada
                         .orElse(null);
 
         if (statusExpirada == null) {
@@ -411,7 +408,7 @@ public class ReservaService {
                                 &&
                                 !reserva.getStatusReserva()
                                         .getId()
-                                        .equals(4L)
+                                        .equals(3L)
                 ) {
 
                     reserva.setStatusReserva(
@@ -432,7 +429,7 @@ public class ReservaService {
                                         .findById(1L)
                                         .orElseThrow(() ->
                                                 new RegraNegocioException(
-                                                        "Status DISPONÍVEL não encontrado."
+                                                        "Status Disponível não encontrado."
                                                 ));
 
                         exemplarLiberado.setStatusExemplar(
@@ -481,7 +478,11 @@ public class ReservaService {
                             &&
                             !reserva.getStatusReserva()
                                     .getId()
-                                    .equals(4L)
+                                    .equals(3L) // Expirada
+                            &&
+                            !reserva.getStatusReserva()
+                                    .getId()
+                                    .equals(4L) // Cancelada
             ) {
 
                 reserva.setPosicaoFila(
@@ -537,7 +538,7 @@ public class ReservaService {
 
         StatusReserva disponivelRetirada =
                 statusReservaRepository
-                        .findById(3L)
+                        .findById(2L)
                         .orElseThrow(() ->
                                 new RegraNegocioException(
                                         "Status Disponível para Retirada não encontrado."
@@ -545,10 +546,10 @@ public class ReservaService {
 
         StatusExemplar reservado =
                 statusExemplarRepository
-                        .findById(3L)
+                        .findById(2L)
                         .orElseThrow(() ->
                                 new RegraNegocioException(
-                                        "Status RESERVADO não encontrado."
+                                        "Status Reservado não encontrado."
                                 ));
 
         exemplar.setStatusExemplar(
