@@ -2,23 +2,8 @@ package br.edu.ifsudestemg.sb.service;
 
 import br.edu.ifsudestemg.sb.api.dto.EmprestimoDTO;
 import br.edu.ifsudestemg.sb.exception.RegraNegocioException;
-import br.edu.ifsudestemg.sb.model.entity.Cliente;
-import br.edu.ifsudestemg.sb.model.entity.DuracaoPadraoEmprestimo;
-import br.edu.ifsudestemg.sb.model.entity.Emprestimo;
-import br.edu.ifsudestemg.sb.model.entity.Exemplar;
-import br.edu.ifsudestemg.sb.model.entity.Obra;
-import br.edu.ifsudestemg.sb.model.entity.Reserva;
-import br.edu.ifsudestemg.sb.model.entity.StatusExemplar;
-import br.edu.ifsudestemg.sb.model.entity.StatusReserva;
-import br.edu.ifsudestemg.sb.model.entity.ValorDiarioMulta;
-import br.edu.ifsudestemg.sb.model.repository.ClienteRepository;
-import br.edu.ifsudestemg.sb.model.repository.DuracaoPadraoEmprestimoRepository;
-import br.edu.ifsudestemg.sb.model.repository.EmprestimoRepository;
-import br.edu.ifsudestemg.sb.model.repository.ExemplarRepository;
-import br.edu.ifsudestemg.sb.model.repository.ReservaRepository;
-import br.edu.ifsudestemg.sb.model.repository.StatusExemplarRepository;
-import br.edu.ifsudestemg.sb.model.repository.StatusReservaRepository;
-import br.edu.ifsudestemg.sb.model.repository.ValorDiarioMultaRepository;
+import br.edu.ifsudestemg.sb.model.entity.*;
+import br.edu.ifsudestemg.sb.model.repository.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -45,10 +30,16 @@ public class EmprestimoService {
     private final ReservaRepository reservaRepository;
     private final StatusReservaRepository statusReservaRepository;
 
-    public EmprestimoService(EmprestimoRepository repository, ClienteRepository clienteRepository,
-                             ExemplarRepository exemplarRepository, DuracaoPadraoEmprestimoRepository duracaoRepository,
-                             ValorDiarioMultaRepository valorMultaRepository, StatusExemplarRepository statusExemplarRepository,
-                             ReservaRepository reservaRepository, StatusReservaRepository statusReservaRepository) {
+    public EmprestimoService(
+            EmprestimoRepository repository,
+            ClienteRepository clienteRepository,
+            ExemplarRepository exemplarRepository,
+            DuracaoPadraoEmprestimoRepository duracaoRepository,
+            ValorDiarioMultaRepository valorMultaRepository,
+            StatusExemplarRepository statusExemplarRepository,
+            ReservaRepository reservaRepository,
+            StatusReservaRepository statusReservaRepository
+    ) {
         this.repository = repository;
         this.clienteRepository = clienteRepository;
         this.exemplarRepository = exemplarRepository;
@@ -59,6 +50,10 @@ public class EmprestimoService {
         this.statusReservaRepository = statusReservaRepository;
     }
 
+    // =========================
+    // CONSULTAS
+    // =========================
+
     public List<Emprestimo> getEmprestimos() {
         atualizarEmprestimosAtrasados();
         return repository.findAll();
@@ -66,7 +61,8 @@ public class EmprestimoService {
 
     public List<EmprestimoDTO> getEmprestimosDTO() {
         atualizarEmprestimosAtrasados();
-        return repository.findAll().stream()
+        return repository.findAll()
+                .stream()
                 .map(this::createDTO)
                 .collect(Collectors.toList());
     }
@@ -76,8 +72,14 @@ public class EmprestimoService {
         return repository.findById(id);
     }
 
+    // =========================
+    // DTO
+    // =========================
+
     public EmprestimoDTO createDTO(Emprestimo emprestimo) {
+
         atualizarMulta(emprestimo);
+
         ModelMapper mapper = new ModelMapper();
         EmprestimoDTO dto = mapper.map(emprestimo, EmprestimoDTO.class);
 
@@ -97,20 +99,33 @@ public class EmprestimoService {
         }
 
         if (emprestimo.getDuracaoPadraoEmprestimo() != null) {
-            dto.setIdDuracaoPadraoEmprestimo(emprestimo.getDuracaoPadraoEmprestimo().getId());
-            dto.setDiasUteis(emprestimo.getDuracaoPadraoEmprestimo().getDiasUteis());
+            dto.setIdDuracaoPadraoEmprestimo(
+                    emprestimo.getDuracaoPadraoEmprestimo().getId()
+            );
+            dto.setDiasUteis(
+                    emprestimo.getDuracaoPadraoEmprestimo().getDiasUteis()
+            );
         }
 
         if (emprestimo.getValorDiarioMulta() != null) {
-            dto.setIdValorDiarioMulta(emprestimo.getValorDiarioMulta().getId());
-            dto.setValorDia(emprestimo.getValorDiarioMulta().getValorDia());
+            dto.setIdValorDiarioMulta(
+                    emprestimo.getValorDiarioMulta().getId()
+            );
+            dto.setValorDia(
+                    emprestimo.getValorDiarioMulta().getValorDia()
+            );
         }
 
         return dto;
     }
 
+    // =========================
+    // CRIAR
+    // =========================
+
     @Transactional
     public Emprestimo salvar(Emprestimo emprestimo, Long idCliente, Long idExemplar) {
+
         Cliente cliente = clienteRepository.findById(idCliente)
                 .orElseThrow(() -> new RegraNegocioException("Cliente não encontrado."));
 
@@ -119,6 +134,13 @@ public class EmprestimoService {
 
         if (!exemplar.getStatusExemplar().getId().equals(1L)) {
             throw new RegraNegocioException("Somente exemplares disponíveis podem ser emprestados.");
+        }
+
+        if (repository.existsByClienteIdAndExemplarObraIdAndDataHoraEntregaIsNull(
+                cliente.getId(),
+                exemplar.getObra().getId()
+        )) {
+            throw new RegraNegocioException("O cliente já possui um empréstimo ativo desta obra.");
         }
 
         DuracaoPadraoEmprestimo duracao = duracaoRepository.findTopByOrderByIdDesc()
@@ -137,17 +159,77 @@ public class EmprestimoService {
         emprestimo.setExemplar(exemplar);
         emprestimo.setDuracaoPadraoEmprestimo(duracao);
         emprestimo.setValorDiarioMulta(multa);
+
         emprestimo.setDataHoraEmprestimo(LocalDateTime.now());
-        emprestimo.setDataPrevistaDevolucao(LocalDate.now().plusDays(duracao.getDiasUteis()));
+        emprestimo.setDataPrevistaDevolucao(
+                LocalDate.now().plusDays(duracao.getDiasUteis())
+        );
+
         emprestimo.setDataHoraEntrega(null);
         emprestimo.setMulta(BigDecimal.ZERO);
 
         validar(emprestimo);
+
         return repository.save(emprestimo);
     }
 
+    // =========================
+    // ATUALIZAR (RESTORED)
+    // =========================
+
+    @Transactional
+    public Emprestimo atualizar(Emprestimo emprestimo, Long idCliente, Long idExemplar) {
+
+        Emprestimo original = repository.findById(emprestimo.getId())
+                .orElseThrow(() -> new RegraNegocioException("Empréstimo não encontrado."));
+
+        Cliente cliente = clienteRepository.findById(idCliente)
+                .orElseThrow(() -> new RegraNegocioException("Cliente não encontrado."));
+
+        Exemplar exemplar = exemplarRepository.findById(idExemplar)
+                .orElseThrow(() -> new RegraNegocioException("Exemplar não encontrado."));
+
+        // RN: não permite mudar regras críticas do empréstimo
+        emprestimo.setCliente(cliente);
+        emprestimo.setExemplar(exemplar);
+
+        emprestimo.setDuracaoPadraoEmprestimo(original.getDuracaoPadraoEmprestimo());
+        emprestimo.setValorDiarioMulta(original.getValorDiarioMulta());
+        emprestimo.setDataHoraEmprestimo(original.getDataHoraEmprestimo());
+        emprestimo.setDataPrevistaDevolucao(original.getDataPrevistaDevolucao());
+        emprestimo.setDataHoraEntrega(original.getDataHoraEntrega());
+
+        atualizarMulta(emprestimo);
+        validar(emprestimo);
+
+        return repository.save(emprestimo);
+    }
+
+    // =========================
+    // EXCLUIR (RESTORED)
+    // =========================
+
+    @Transactional
+    public void excluir(Emprestimo emprestimo) {
+
+        Objects.requireNonNull(emprestimo.getId());
+
+        try {
+            repository.delete(emprestimo);
+            repository.flush();
+
+        } catch (DataIntegrityViolationException e) {
+            throw new RegraNegocioException("Não foi possível excluir o empréstimo.");
+        }
+    }
+
+    // =========================
+    // ENTREGA
+    // =========================
+
     @Transactional
     public Emprestimo registrarEntrega(Long idEmprestimo) {
+
         Emprestimo emprestimo = repository.findById(idEmprestimo)
                 .orElseThrow(() -> new RegraNegocioException("Empréstimo não encontrado."));
 
@@ -168,20 +250,27 @@ public class EmprestimoService {
         repository.save(emprestimo);
 
         promoverReserva(exemplar);
+
         return emprestimo;
     }
 
-    private void promoverReserva(Exemplar exemplar) {
-        Obra obra = exemplar.getObra();
-        List<Reserva> fila = reservaRepository.findByObraIdAndStatusReservaIdOrderByPosicaoFilaAsc(obra.getId(), 1L);
+    // =========================
+    // RESERVA
+    // =========================
 
-        if (fila.isEmpty()) {
-            return;
-        }
+    private void promoverReserva(Exemplar exemplar) {
+
+        List<Reserva> fila =
+                reservaRepository.findByObraIdAndStatusReservaIdOrderByPosicaoFilaAsc(
+                        exemplar.getObra().getId(), 1L
+                );
+
+        if (fila.isEmpty()) return;
 
         Reserva reserva = fila.get(0);
+
         StatusReserva disponivelRetirada = statusReservaRepository.findById(2L)
-                .orElseThrow(() -> new RegraNegocioException("Status Disponível Para Retirada não encontrado."));
+                .orElseThrow(() -> new RegraNegocioException("Status Reserva não encontrado."));
 
         StatusExemplar reservado = statusExemplarRepository.findById(2L)
                 .orElseThrow(() -> new RegraNegocioException("Status Reservado não encontrado."));
@@ -191,77 +280,52 @@ public class EmprestimoService {
 
         reserva.setExemplar(exemplar);
         reserva.setStatusReserva(disponivelRetirada);
-        reserva.setDataMaximaPrevistaColeta(LocalDate.now().plusDays(reserva.getDuracaoPadraoReserva().getDiasUteis()));
+        reserva.setDataMaximaPrevistaColeta(
+                LocalDate.now().plusDays(
+                        reserva.getDuracaoPadraoReserva().getDiasUteis()
+                )
+        );
 
         reservaRepository.save(reserva);
     }
 
-    @Transactional
-    public Emprestimo atualizar(Emprestimo emprestimo, Long idCliente, Long idExemplar) {
-        Cliente cliente = clienteRepository.findById(idCliente)
-                .orElseThrow(() -> new RegraNegocioException("Cliente não encontrado."));
-
-        Exemplar exemplar = exemplarRepository.findById(idExemplar)
-                .orElseThrow(() -> new RegraNegocioException("Exemplar não encontrado."));
-
-        Emprestimo original = repository.findById(emprestimo.getId())
-                .orElseThrow(() -> new RegraNegocioException("Empréstimo não encontrado."));
-
-        emprestimo.setCliente(cliente);
-        emprestimo.setExemplar(exemplar);
-        emprestimo.setDuracaoPadraoEmprestimo(original.getDuracaoPadraoEmprestimo());
-        emprestimo.setValorDiarioMulta(original.getValorDiarioMulta());
-        emprestimo.setDataHoraEmprestimo(original.getDataHoraEmprestimo());
-        emprestimo.setDataPrevistaDevolucao(original.getDataPrevistaDevolucao());
-
-        atualizarMulta(emprestimo);
-        validar(emprestimo);
-
-        return repository.save(emprestimo);
-    }
-
-    @Transactional
-    public void excluir(Emprestimo emprestimo) {
-        Objects.requireNonNull(emprestimo.getId());
-
-        try {
-            repository.delete(emprestimo);
-            repository.flush();
-        } catch (DataIntegrityViolationException e) {
-            throw new RegraNegocioException("Não foi possível excluir o empréstimo.");
-        }
-    }
+    // =========================
+    // ATRASOS
+    // =========================
 
     @Transactional
     public void atualizarEmprestimosAtrasados() {
+
         List<Emprestimo> emprestimos = repository.findAll();
         StatusExemplar emAtraso = statusExemplarRepository.findById(4L).orElse(null);
 
-        if (emAtraso == null) {
-            return;
-        }
+        if (emAtraso == null) return;
 
         LocalDate hoje = LocalDate.now();
 
-        for (Emprestimo emprestimo : emprestimos) {
-            if (emprestimo.getDataHoraEntrega() == null && hoje.isAfter(emprestimo.getDataPrevistaDevolucao())) {
-                Exemplar exemplar = emprestimo.getExemplar();
+        for (Emprestimo e : emprestimos) {
 
-                if (exemplar != null && exemplar.getStatusExemplar() != null && exemplar.getStatusExemplar().getId().equals(3L)) {
-                    exemplar.setStatusExemplar(emAtraso);
-                    exemplarRepository.save(exemplar);
+            if (e.getDataHoraEntrega() == null &&
+                    hoje.isAfter(e.getDataPrevistaDevolucao())) {
+
+                Exemplar ex = e.getExemplar();
+
+                if (ex != null && ex.getStatusExemplar() != null &&
+                        ex.getStatusExemplar().getId().equals(3L)) {
+
+                    ex.setStatusExemplar(emAtraso);
+                    exemplarRepository.save(ex);
                 }
 
-                atualizarMulta(emprestimo);
-                repository.save(emprestimo);
+                atualizarMulta(e);
+                repository.save(e);
             }
         }
     }
 
     private void atualizarMulta(Emprestimo emprestimo) {
-        if (emprestimo.getDataHoraEntrega() != null) {
-            return;
-        }
+
+        if (emprestimo.getDataHoraEntrega() != null) return;
 
         LocalDate hoje = LocalDate.now();
 
@@ -270,24 +334,33 @@ public class EmprestimoService {
             return;
         }
 
-        long diasAtraso = ChronoUnit.DAYS.between(emprestimo.getDataPrevistaDevolucao(), hoje);
-        BigDecimal multa = emprestimo.getValorDiarioMulta().getValorDia().multiply(BigDecimal.valueOf(diasAtraso));
+        long dias = ChronoUnit.DAYS.between(
+                emprestimo.getDataPrevistaDevolucao(),
+                hoje
+        );
 
-        emprestimo.setMulta(multa);
+        BigDecimal valor = emprestimo.getValorDiarioMulta().getValorDia()
+                .multiply(BigDecimal.valueOf(dias));
+
+        emprestimo.setMulta(valor);
     }
 
+    // =========================
+    // VALIDAÇÃO
+    // =========================
+
     public void validar(Emprestimo emprestimo) {
-        if (emprestimo.getCliente() == null) {
+
+        if (emprestimo.getCliente() == null)
             throw new RegraNegocioException("Informe o cliente.");
-        }
-        if (emprestimo.getExemplar() == null) {
+
+        if (emprestimo.getExemplar() == null)
             throw new RegraNegocioException("Informe o exemplar.");
-        }
-        if (emprestimo.getDuracaoPadraoEmprestimo() == null) {
-            throw new RegraNegocioException("Duração padrão não encontrada.");
-        }
-        if (emprestimo.getValorDiarioMulta() == null) {
+
+        if (emprestimo.getDuracaoPadraoEmprestimo() == null)
+            throw new RegraNegocioException("Duração não encontrada.");
+
+        if (emprestimo.getValorDiarioMulta() == null)
             throw new RegraNegocioException("Valor da multa não encontrado.");
-        }
     }
 }

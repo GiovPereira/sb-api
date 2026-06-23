@@ -8,13 +8,12 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/emprestimos")
@@ -29,10 +28,9 @@ public class EmprestimoController {
     @ApiResponses({
             @ApiResponse(code = 200, message = "Empréstimos encontrados")
     })
-    public ResponseEntity get() {
+    public ResponseEntity<List<EmprestimoDTO>> get() {
 
-        List<EmprestimoDTO> emprestimos =
-                service.getEmprestimosDTO();
+        List<EmprestimoDTO> emprestimos = service.getEmprestimosDTO();
 
         return ResponseEntity.ok(emprestimos);
     }
@@ -43,25 +41,20 @@ public class EmprestimoController {
             @ApiResponse(code = 200, message = "Empréstimo encontrado"),
             @ApiResponse(code = 404, message = "Empréstimo não encontrado")
     })
-    public ResponseEntity get(@PathVariable("id") Long id) {
+    public ResponseEntity<?> get(@PathVariable("id") Long id) {
 
-        Optional<Emprestimo> emprestimo =
-                service.getEmprestimoById(id);
+        Optional<Emprestimo> emprestimo = service.getEmprestimoById(id);
 
         if (!emprestimo.isPresent()) {
-
-            return new ResponseEntity(
+            return new ResponseEntity<>(
                     "Empréstimo não encontrado",
                     HttpStatus.NOT_FOUND
             );
         }
 
-        EmprestimoDTO dto =
-                service.createDTO(
-                        emprestimo.get()
-                );
-
-        return ResponseEntity.ok(dto);
+        return ResponseEntity.ok(
+                service.createDTO(emprestimo.get())
+        );
     }
 
     @PostMapping
@@ -70,29 +63,32 @@ public class EmprestimoController {
             @ApiResponse(code = 201, message = "Empréstimo salvo"),
             @ApiResponse(code = 400, message = "Erro ao salvar")
     })
-    public ResponseEntity post(
-            @RequestBody EmprestimoDTO dto) {
+    public ResponseEntity<?> post(@RequestBody EmprestimoDTO dto) {
 
         try {
 
-            Emprestimo emprestimo =
-                    converter(dto);
+            Emprestimo emprestimo = new Emprestimo();
 
-            emprestimo =
-                    service.salvar(
-                            emprestimo,
-                            dto.getIdCliente(),
-                            dto.getIdExemplar()
-                    );
+            emprestimo = service.salvar(
+                    emprestimo,
+                    dto.getIdCliente(),
+                    dto.getIdExemplar()
+            );
 
-            return new ResponseEntity(
-                    service.createDTO(
-                            emprestimo
-                    ),
+            return new ResponseEntity<>(
+                    service.createDTO(emprestimo),
                     HttpStatus.CREATED
             );
 
         } catch (RegraNegocioException e) {
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(e.getMessage());
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
 
             return ResponseEntity
                     .badRequest()
@@ -106,13 +102,14 @@ public class EmprestimoController {
             @ApiResponse(code = 200, message = "Empréstimo atualizado"),
             @ApiResponse(code = 404, message = "Empréstimo não encontrado")
     })
-    public ResponseEntity atualizar(
+    public ResponseEntity<?> atualizar(
             @PathVariable("id") Long id,
             @RequestBody EmprestimoDTO dto) {
 
-        if (!service.getEmprestimoById(id).isPresent()) {
+        Optional<Emprestimo> existente = service.getEmprestimoById(id);
 
-            return new ResponseEntity(
+        if (!existente.isPresent()) {
+            return new ResponseEntity<>(
                     "Empréstimo não encontrado",
                     HttpStatus.NOT_FOUND
             );
@@ -120,25 +117,28 @@ public class EmprestimoController {
 
         try {
 
-            Emprestimo emprestimo =
-                    converter(dto);
-
+            Emprestimo emprestimo = new Emprestimo();
             emprestimo.setId(id);
 
-            emprestimo =
-                    service.atualizar(
-                            emprestimo,
-                            dto.getIdCliente(),
-                            dto.getIdExemplar()
-                    );
+            emprestimo = service.atualizar(
+                    emprestimo,
+                    dto.getIdCliente(),
+                    dto.getIdExemplar()
+            );
 
             return ResponseEntity.ok(
-                    service.createDTO(
-                            emprestimo
-                    )
+                    service.createDTO(emprestimo)
             );
 
         } catch (RegraNegocioException e) {
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(e.getMessage());
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
 
             return ResponseEntity
                     .badRequest()
@@ -152,15 +152,12 @@ public class EmprestimoController {
             @ApiResponse(code = 204, message = "Empréstimo excluído"),
             @ApiResponse(code = 404, message = "Empréstimo não encontrado")
     })
-    public ResponseEntity excluir(
-            @PathVariable("id") Long id) {
+    public ResponseEntity<?> excluir(@PathVariable("id") Long id) {
 
-        Optional<Emprestimo> emprestimo =
-                service.getEmprestimoById(id);
+        Optional<Emprestimo> emprestimo = service.getEmprestimoById(id);
 
         if (!emprestimo.isPresent()) {
-
-            return new ResponseEntity(
+            return new ResponseEntity<>(
                     "Empréstimo não encontrado",
                     HttpStatus.NOT_FOUND
             );
@@ -168,13 +165,9 @@ public class EmprestimoController {
 
         try {
 
-            service.excluir(
-                    emprestimo.get()
-            );
+            service.excluir(emprestimo.get());
 
-            return new ResponseEntity(
-                    HttpStatus.NO_CONTENT
-            );
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 
         } catch (RegraNegocioException e) {
 
@@ -190,18 +183,14 @@ public class EmprestimoController {
             @ApiResponse(code = 200, message = "Entrega registrada"),
             @ApiResponse(code = 404, message = "Empréstimo não encontrado")
     })
-    public ResponseEntity registrarEntrega(
-            @PathVariable("id") Long id) {
+    public ResponseEntity<?> registrarEntrega(@PathVariable("id") Long id) {
 
         try {
 
-            Emprestimo emprestimo =
-                    service.registrarEntrega(id);
+            Emprestimo emprestimo = service.registrarEntrega(id);
 
             return ResponseEntity.ok(
-                    service.createDTO(
-                            emprestimo
-                    )
+                    service.createDTO(emprestimo)
             );
 
         } catch (RegraNegocioException e) {
@@ -210,17 +199,5 @@ public class EmprestimoController {
                     .badRequest()
                     .body(e.getMessage());
         }
-    }
-
-    private Emprestimo converter(
-            EmprestimoDTO dto) {
-
-        ModelMapper modelMapper =
-                new ModelMapper();
-
-        return modelMapper.map(
-                dto,
-                Emprestimo.class
-        );
     }
 }

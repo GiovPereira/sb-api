@@ -29,7 +29,12 @@ public class ExemplarService {
     private final StatusExemplarRepository statusRepository;
     private final SecaoRepository secaoRepository;
 
-    public ExemplarService(ExemplarRepository repository, ObraRepository obraRepository, StatusExemplarRepository statusRepository, SecaoRepository secaoRepository) {
+    public ExemplarService(
+            ExemplarRepository repository,
+            ObraRepository obraRepository,
+            StatusExemplarRepository statusRepository,
+            SecaoRepository secaoRepository
+    ) {
         this.repository = repository;
         this.obraRepository = obraRepository;
         this.statusRepository = statusRepository;
@@ -41,7 +46,8 @@ public class ExemplarService {
     }
 
     public List<ExemplarDTO> getExemplaresDTO() {
-        return repository.findAll().stream()
+        return repository.findAll()
+                .stream()
                 .map(this::createDTO)
                 .collect(Collectors.toList());
     }
@@ -51,6 +57,7 @@ public class ExemplarService {
     }
 
     public ExemplarDTO createDTO(Exemplar exemplar) {
+
         ModelMapper mapper = new ModelMapper();
         ExemplarDTO dto = mapper.map(exemplar, ExemplarDTO.class);
 
@@ -74,6 +81,7 @@ public class ExemplarService {
 
     @Transactional
     public Exemplar salvar(Exemplar exemplar, Long idObra, Long idSecao) {
+
         Obra obra = obraRepository.findById(idObra)
                 .orElseThrow(() -> new RegraNegocioException("Obra não encontrada."));
 
@@ -81,7 +89,7 @@ public class ExemplarService {
                 .orElseThrow(() -> new RegraNegocioException("Seção não encontrada."));
 
         StatusExemplar disponivel = statusRepository.findById(1L)
-                .orElseThrow(() -> new RegraNegocioException("Status Disponível não encontrado."));
+                .orElseThrow(() -> new RegraNegocioException("Status não encontrado."));
 
         exemplar.setObra(obra);
         exemplar.setSecao(secao);
@@ -92,11 +100,13 @@ public class ExemplarService {
         }
 
         validar(exemplar);
+
         return repository.save(exemplar);
     }
 
     @Transactional
     public Exemplar atualizar(Exemplar exemplar, Long idObra, Long idStatusExemplar, Long idSecao) {
+
         Exemplar original = repository.findById(exemplar.getId())
                 .orElseThrow(() -> new RegraNegocioException("Exemplar não encontrado."));
 
@@ -109,6 +119,14 @@ public class ExemplarService {
         StatusExemplar status = statusRepository.findById(idStatusExemplar)
                 .orElseThrow(() -> new RegraNegocioException("Status não encontrado."));
 
+        // REGRA: não permitir mudança manual se estiver em posse ou atraso
+        if (original.getStatusExemplar() != null) {
+            Long atual = original.getStatusExemplar().getId();
+            if (atual.equals(3L) || atual.equals(4L)) {
+                throw new RegraNegocioException("Exemplar em posse ou atraso não pode ser alterado manualmente.");
+            }
+        }
+
         exemplar.setObra(obra);
         exemplar.setSecao(secao);
         exemplar.setStatusExemplar(status);
@@ -118,11 +136,13 @@ public class ExemplarService {
         }
 
         validar(exemplar);
+
         return repository.save(exemplar);
     }
 
     @Transactional
     public void excluir(Exemplar exemplar) {
+
         Objects.requireNonNull(exemplar.getId());
 
         try {
@@ -135,6 +155,7 @@ public class ExemplarService {
 
     @Transactional
     public Exemplar alterarStatus(Long idExemplar, Long idNovoStatus) {
+
         Exemplar exemplar = repository.findById(idExemplar)
                 .orElseThrow(() -> new RegraNegocioException("Exemplar não encontrado."));
 
@@ -144,55 +165,42 @@ public class ExemplarService {
         StatusExemplar atual = exemplar.getStatusExemplar();
 
         validarTransicao(atual.getId(), novoStatus.getId());
+
         exemplar.setStatusExemplar(novoStatus);
 
         return repository.save(exemplar);
     }
 
     private void validarTransicao(Long atual, Long novo) {
-        // Em Posse
-        if (atual.equals(3L)) {
-            throw new RegraNegocioException("Exemplar em posse não pode ter status alterado manualmente.");
+        if (atual.equals(3L) || atual.equals(4L)) {
+            throw new RegraNegocioException(
+                    "Exemplar em posse ou atraso não pode ter status alterado manualmente."
+            );
         }
-
-        // Em Atraso
-        if (atual.equals(4L)) {
-            throw new RegraNegocioException("Exemplar em atraso não pode ter status alterado manualmente.");
-        }
-
-        // Disponível
         if (novo.equals(1L)) {
             return;
         }
 
-        // Reservado
         if (novo.equals(2L)) {
-            if (atual.equals(1L)) {
-                return;
-            }
-            throw new RegraNegocioException("Transição de status inválida.");
+            if (atual.equals(1L)) return;
+            throw new RegraNegocioException("Transição inválida para reservado.");
         }
 
-        // Extraviado
         if (novo.equals(5L)) {
-            if (atual.equals(1L) || atual.equals(2L)) {
-                return;
-            }
-            throw new RegraNegocioException("Transição de status inválida.");
+            if (atual.equals(1L) || atual.equals(2L)) return;
+            throw new RegraNegocioException("Transição inválida para extraviado.");
         }
-
-        // Danificado
+        
         if (novo.equals(6L)) {
-            if (atual.equals(1L) || atual.equals(2L)) {
-                return;
-            }
-            throw new RegraNegocioException("Transição de status inválida.");
+            if (atual.equals(1L) || atual.equals(2L)) return;
+            throw new RegraNegocioException("Transição inválida para danificado.");
         }
 
         throw new RegraNegocioException("Transição de status inválida.");
     }
 
     public void validar(Exemplar exemplar) {
+
         if (exemplar.getTombo() == null || exemplar.getTombo().trim().isEmpty()) {
             throw new RegraNegocioException("Informe o tombo.");
         }

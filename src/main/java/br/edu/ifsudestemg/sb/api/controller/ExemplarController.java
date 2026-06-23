@@ -22,6 +22,7 @@ import java.util.Optional;
 @CrossOrigin
 public class ExemplarController {
 
+
     private final ExemplarService service;
 
     @GetMapping
@@ -31,9 +32,12 @@ public class ExemplarController {
     })
     public ResponseEntity get() {
 
-        List<ExemplarDTO> exemplares = service.getExemplaresDTO();
+        List<ExemplarDTO> exemplares =
+                service.getExemplaresDTO();
 
-        return ResponseEntity.ok(exemplares);
+        return ResponseEntity.ok(
+                exemplares
+        );
     }
 
     @GetMapping("/{id}")
@@ -42,17 +46,29 @@ public class ExemplarController {
             @ApiResponse(code = 200, message = "Exemplar encontrado"),
             @ApiResponse(code = 404, message = "Exemplar não encontrado")
     })
-    public ResponseEntity get(@PathVariable("id") Long id) {
+    public ResponseEntity get(
+            @PathVariable("id") Long id
+    ) {
 
-        Optional<Exemplar> exemplar = service.getExemplarById(id);
+        Optional<Exemplar> exemplar =
+                service.getExemplarById(id);
 
         if (!exemplar.isPresent()) {
-            return new ResponseEntity("Exemplar não encontrado", HttpStatus.NOT_FOUND);
+
+            return new ResponseEntity(
+                    "Exemplar não encontrado",
+                    HttpStatus.NOT_FOUND
+            );
         }
 
-        ExemplarDTO dto = service.createDTO(exemplar.get());
+        ExemplarDTO dto =
+                service.createDTO(
+                        exemplar.get()
+                );
 
-        return ResponseEntity.ok(dto);
+        return ResponseEntity.ok(
+                dto
+        );
     }
 
     @PostMapping
@@ -61,29 +77,38 @@ public class ExemplarController {
             @ApiResponse(code = 201, message = "Exemplar salvo"),
             @ApiResponse(code = 400, message = "Erro ao salvar")
     })
-    public ResponseEntity post(@RequestBody ExemplarDTO dto) {
+    public ResponseEntity post(
+            @RequestBody ExemplarDTO dto
+    ) {
 
         try {
 
-            Exemplar exemplar = converter(dto);
+            Exemplar exemplar =
+                    converter(dto);
 
-            exemplar = service.salvar(
-                    exemplar,
-                    dto.getIdObra(),
-                    dto.getIdSecao()
-            );
+            exemplar =
+                    service.salvar(
+                            exemplar,
+                            dto.getIdObra(),
+                            dto.getIdSecao()
+                    );
 
             return new ResponseEntity(
-                    service.createDTO(exemplar),
+                    service.createDTO(
+                            exemplar
+                    ),
                     HttpStatus.CREATED
             );
 
-        } catch (RegraNegocioException e) {
+        } catch (
+                RegraNegocioException e
+        ) {
 
             return ResponseEntity
                     .badRequest()
-                    .body(e.getMessage());
-
+                    .body(
+                            e.getMessage()
+                    );
         }
     }
 
@@ -93,33 +118,89 @@ public class ExemplarController {
             @ApiResponse(code = 200, message = "Exemplar atualizado"),
             @ApiResponse(code = 404, message = "Exemplar não encontrado")
     })
-    public ResponseEntity atualizar(@PathVariable("id") Long id, @RequestBody ExemplarDTO dto) {
+    public ResponseEntity atualizar(
+            @PathVariable("id") Long id,
+            @RequestBody ExemplarDTO dto
+    ) {
 
-        if (!service.getExemplarById(id).isPresent()) {
-            return new ResponseEntity("Exemplar não encontrado", HttpStatus.NOT_FOUND);
+        if (!service
+                .getExemplarById(id)
+                .isPresent()) {
+
+            return new ResponseEntity(
+                    "Exemplar não encontrado",
+                    HttpStatus.NOT_FOUND
+            );
         }
 
         try {
 
-            Exemplar exemplar = converter(dto);
+            Exemplar exemplar =
+                    converter(dto);
 
             exemplar.setId(id);
 
-            exemplar = service.atualizar(
-                    exemplar,
-                    dto.getIdObra(),
-                    dto.getIdStatusExemplar(),
-                    dto.getIdSecao()
+            exemplar =
+                    service.atualizar(
+                            exemplar,
+                            dto.getIdObra(),
+                            dto.getIdStatusExemplar(),
+                            dto.getIdSecao()
+                    );
+
+            return ResponseEntity.ok(
+                    service.createDTO(
+                            exemplar
+                    )
             );
 
-            return ResponseEntity.ok(service.createDTO(exemplar));
-
-        } catch (RegraNegocioException e) {
+        } catch (
+                RegraNegocioException e
+        ) {
 
             return ResponseEntity
                     .badRequest()
-                    .body(e.getMessage());
+                    .body(
+                            e.getMessage()
+                    );
+        }
+    }
 
+    @PatchMapping("/{id}/status/{idStatus}")
+    @ApiOperation("Alterar status do exemplar")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Status alterado com sucesso"),
+            @ApiResponse(code = 400, message = "Erro ao alterar status"),
+            @ApiResponse(code = 404, message = "Exemplar não encontrado")
+    })
+    public ResponseEntity alterarStatus(
+            @PathVariable("id") Long id,
+            @PathVariable("idStatus") Long idStatus
+    ) {
+
+        try {
+
+            Exemplar exemplar =
+                    service.alterarStatus(
+                            id,
+                            idStatus
+                    );
+
+            return ResponseEntity.ok(
+                    service.createDTO(
+                            exemplar
+                    )
+            );
+
+        } catch (
+                RegraNegocioException e
+        ) {
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(
+                            e.getMessage()
+                    );
         }
     }
 
@@ -129,34 +210,55 @@ public class ExemplarController {
             @ApiResponse(code = 204, message = "Exemplar excluído"),
             @ApiResponse(code = 404, message = "Exemplar não encontrado")
     })
-    public ResponseEntity excluir(@PathVariable("id") Long id) {
+    public ResponseEntity excluir(
+            @PathVariable("id") Long id
+    ) {
 
-        Optional<Exemplar> exemplar = service.getExemplarById(id);
+        Optional<Exemplar> exemplar =
+                service.getExemplarById(id);
 
         if (!exemplar.isPresent()) {
-            return new ResponseEntity("Exemplar não encontrado", HttpStatus.NOT_FOUND);
+
+            return new ResponseEntity(
+                    "Exemplar não encontrado",
+                    HttpStatus.NOT_FOUND
+            );
         }
 
         try {
 
-            service.excluir(exemplar.get());
+            service.excluir(
+                    exemplar.get()
+            );
 
-            return new ResponseEntity(HttpStatus.NO_CONTENT);
+            return new ResponseEntity(
+                    HttpStatus.NO_CONTENT
+            );
 
-        } catch (RegraNegocioException e) {
+        } catch (
+                RegraNegocioException e
+        ) {
 
             return ResponseEntity
                     .badRequest()
-                    .body(e.getMessage());
-
+                    .body(
+                            e.getMessage()
+                    );
         }
     }
 
-    private Exemplar converter(ExemplarDTO dto) {
+    private Exemplar converter(
+            ExemplarDTO dto
+    ) {
 
-        ModelMapper modelMapper = new ModelMapper();
+        ModelMapper modelMapper =
+                new ModelMapper();
 
-        return modelMapper.map(dto, Exemplar.class);
+        return modelMapper.map(
+                dto,
+                Exemplar.class
+        );
     }
+
 
 }
