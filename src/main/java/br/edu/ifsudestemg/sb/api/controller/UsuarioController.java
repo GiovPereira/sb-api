@@ -1,6 +1,5 @@
 package br.edu.ifsudestemg.sb.api.controller;
 
-
 import br.edu.ifsudestemg.sb.api.dto.*;
 import br.edu.ifsudestemg.sb.exception.RegraNegocioException;
 import br.edu.ifsudestemg.sb.exception.SenhaInvalidaException;
@@ -28,11 +27,9 @@ import java.util.stream.Collectors;
 @CrossOrigin
 public class UsuarioController {
 
-    private final UsuarioService usuarioService;
+    private final UsuarioService service; // Unificado os dois services em um só
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
-
-    private final UsuarioService service;
 
     @GetMapping()
     @ApiOperation("Obter usuários")
@@ -79,9 +76,20 @@ public class UsuarioController {
             Usuario usuario = Usuario.builder()
                     .login(credenciais.getLogin())
                     .senha(credenciais.getSenha()).build();
-            UserDetails usuarioAutenticado = usuarioService.autenticar(usuario);
+
+            // Autentica usando a regra de negócio do seu Service
+            UserDetails usuarioAutenticado = service.autenticar(usuario);
+
+            // Gera o JWT Token
             String token = jwtService.gerarToken(usuario);
-            return new TokenDTO(usuario.getLogin(), token);
+
+            // Mapeia se o usuário carregado possui autorização de ADMIN
+            String role = usuarioAutenticado.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN")) ? "ADMIN" : "USER";
+
+            // Retorna o DTO atualizado com Login, Token e Role
+            return new TokenDTO(usuario.getLogin(), token, role);
+
         } catch (UsernameNotFoundException | SenhaInvalidaException e ){
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, e.getMessage());
         }
@@ -127,8 +135,6 @@ public class UsuarioController {
 
     public Usuario converter(UsuarioDTO dto) {
         ModelMapper modelMapper = new ModelMapper();
-        Usuario usuario = modelMapper.map(dto, Usuario.class);
-        return usuario;
+        return modelMapper.map(dto, Usuario.class);
     }
 }
-
