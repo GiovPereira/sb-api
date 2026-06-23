@@ -9,7 +9,7 @@ import java.util.Optional;
 @Repository
 public interface StatusReservaRepository extends JpaRepository<StatusReserva, Long> {
 
-//    Optional<StatusReserva> findByNomeIgnoreCase(String nome);
+    Optional<StatusReserva> findByNomeIgnoreCase(String nome);
 
     Optional<StatusReserva> findTopByOrderByIdDesc();
 

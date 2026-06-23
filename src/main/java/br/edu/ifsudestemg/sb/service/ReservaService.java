@@ -27,15 +27,10 @@ public class ReservaService {
     private final StatusExemplarRepository statusExemplarRepository;
     private final DuracaoPadraoReservaRepository duracaoPadraoReservaRepository;
 
-    public ReservaService(
-            ReservaRepository repository,
-            ClienteRepository clienteRepository,
-            ObraRepository obraRepository,
-            ExemplarRepository exemplarRepository,
-            StatusReservaRepository statusReservaRepository,
-            StatusExemplarRepository statusExemplarRepository,
-            DuracaoPadraoReservaRepository duracaoPadraoReservaRepository) {
-
+    public ReservaService(ReservaRepository repository, ClienteRepository clienteRepository,
+                          ObraRepository obraRepository, ExemplarRepository exemplarRepository,
+                          StatusReservaRepository statusReservaRepository, StatusExemplarRepository statusExemplarRepository,
+                          DuracaoPadraoReservaRepository duracaoPadraoReservaRepository) {
         this.repository = repository;
         this.clienteRepository = clienteRepository;
         this.obraRepository = obraRepository;
@@ -46,486 +41,217 @@ public class ReservaService {
     }
 
     public List<ReservaDTO> getReservasDTO() {
-
         atualizarReservasExpiradas();
-
-        return repository.findAll()
-                .stream()
+        return repository.findAll().stream()
                 .map(this::createDTO)
                 .collect(Collectors.toList());
     }
 
     public ReservaDTO createDTO(Reserva reserva) {
-
         ModelMapper modelMapper = new ModelMapper();
-
-        ReservaDTO dto =
-                modelMapper.map(
-                        reserva,
-                        ReservaDTO.class
-                );
+        ReservaDTO dto = modelMapper.map(reserva, ReservaDTO.class);
 
         if (reserva.getCliente() != null) {
-
-            dto.setIdCliente(
-                    reserva.getCliente().getId()
-            );
-
-            dto.setNomeCliente(
-                    reserva.getCliente().getNome()
-            );
+            dto.setIdCliente(reserva.getCliente().getId());
+            dto.setNomeCliente(reserva.getCliente().getNome());
         }
 
         if (reserva.getObra() != null) {
-
-            dto.setIdObra(
-                    reserva.getObra().getId()
-            );
-
-            dto.setTituloObra(
-                    reserva.getObra().getTitulo()
-            );
+            dto.setIdObra(reserva.getObra().getId());
+            dto.setTituloObra(reserva.getObra().getTitulo());
         }
 
         if (reserva.getExemplar() != null) {
-
-            dto.setIdExemplar(
-                    reserva.getExemplar().getId()
-            );
+            dto.setIdExemplar(reserva.getExemplar().getId());
         }
 
         if (reserva.getStatusReserva() != null) {
-
-            dto.setIdStatusReserva(
-                    reserva.getStatusReserva().getId()
-            );
-
-            dto.setNomeStatusReserva(
-                    reserva.getStatusReserva().getNome()
-            );
+            dto.setIdStatusReserva(reserva.getStatusReserva().getId());
+            dto.setNomeStatusReserva(reserva.getStatusReserva().getNome());
         }
 
         if (reserva.getDuracaoPadraoReserva() != null) {
-
-            dto.setIdDuracaoPadraoReserva(
-                    reserva.getDuracaoPadraoReserva().getId()
-            );
-
-            dto.setDiasUteisDuracao(
-                    reserva.getDuracaoPadraoReserva().getDiasUteis()
-            );
+            dto.setIdDuracaoPadraoReserva(reserva.getDuracaoPadraoReserva().getId());
+            dto.setDiasUteisDuracao(reserva.getDuracaoPadraoReserva().getDiasUteis());
         }
 
         return dto;
     }
 
     public List<Reserva> getReservas() {
-
         atualizarReservasExpiradas();
-
         return repository.findAll();
     }
 
     public Optional<Reserva> getReservaById(Long id) {
-
         atualizarReservasExpiradas();
-
         return repository.findById(id);
     }
 
     @Transactional
-    public Reserva salvar(
-            Reserva reserva,
-            Long idCliente,
-            Long idObra) {
+    public Reserva salvar(Reserva reserva, Long idCliente, Long idObra) {
+        Cliente cliente = clienteRepository.findById(idCliente)
+                .orElseThrow(() -> new RegraNegocioException("Cliente não encontrado."));
 
-        Cliente cliente =
-                clienteRepository.findById(idCliente)
-                        .orElseThrow(() ->
-                                new RegraNegocioException(
-                                        "Cliente não encontrado."
-                                ));
+        Obra obra = obraRepository.findById(idObra)
+                .orElseThrow(() -> new RegraNegocioException("Obra não encontrada."));
 
-        Obra obra =
-                obraRepository.findById(idObra)
-                        .orElseThrow(() ->
-                                new RegraNegocioException(
-                                        "Obra não encontrada."
-                                ));
-
-        if (repository.existsByClienteIdAndObraId(
-                cliente.getId(),
-                obra.getId())) {
-
-            throw new RegraNegocioException(
-                    "Cliente já possui reserva para esta obra."
-            );
+        if (repository.existsByClienteIdAndObraId(cliente.getId(), obra.getId())) {
+            throw new RegraNegocioException("Cliente já possui reserva para esta obra.");
         }
 
         reserva.setCliente(cliente);
         reserva.setObra(obra);
 
         validar(reserva);
+        reserva.setDataHoraReserva(LocalDateTime.now());
 
-        reserva.setDataHoraReserva(
-                LocalDateTime.now()
-        );
+        DuracaoPadraoReserva duracao = duracaoPadraoReservaRepository.findTopByOrderByIdDesc()
+                .orElseThrow(() -> new RegraNegocioException("Nenhuma duração padrão cadastrada."));
 
-        DuracaoPadraoReserva duracao =
-                duracaoPadraoReservaRepository
-                        .findTopByOrderByIdDesc()
-                        .orElseThrow(() ->
-                                new RegraNegocioException(
-                                        "Nenhuma duração padrão cadastrada."
-                                ));
+        reserva.setDuracaoPadraoReserva(duracao);
 
-        reserva.setDuracaoPadraoReserva(
-                duracao
-        );
+        StatusReserva statusSolicitada = statusReservaRepository.findById(1L)
+                .orElseThrow(() -> new RegraNegocioException("Status Solicitada não encontrado."));
 
-        StatusReserva statusSolicitada =
-                statusReservaRepository
-                        .findById(1L)
-                        .orElseThrow(() ->
-                                new RegraNegocioException(
-                                        "Status Solicitada não encontrado."
-                                ));
+        StatusReserva statusDisponivel = statusReservaRepository.findById(2L)
+                .orElseThrow(() -> new RegraNegocioException("Status Disponível Para Retirada não encontrado."));
 
-        StatusReserva statusDisponivel =
-                statusReservaRepository
-                        .findById(2L)
-                        .orElseThrow(() ->
-                                new RegraNegocioException(
-                                        "Status Disponível Para Retirada não encontrado."
-                                ));
-
-        Optional<Exemplar> exemplarDisponivel =
-                exemplarRepository
-                        .findFirstByObraIdAndStatusExemplarId(
-                                obra.getId(),
-                                1L
-                        );
+        Optional<Exemplar> exemplarDisponivel = exemplarRepository.findFirstByObraIdAndStatusExemplarId(obra.getId(), 1L);
 
         if (exemplarDisponivel.isPresent()) {
+            Exemplar exemplar = exemplarDisponivel.get();
+            StatusExemplar reservado = statusExemplarRepository.findById(2L)
+                    .orElseThrow(() -> new RegraNegocioException("Status Reservado não encontrado."));
 
-            Exemplar exemplar =
-                    exemplarDisponivel.get();
+            exemplar.setStatusExemplar(reservado);
+            exemplarRepository.save(exemplar);
 
-            StatusExemplar reservado =
-                    statusExemplarRepository
-                            .findById(2L)
-                            .orElseThrow(() ->
-                                    new RegraNegocioException(
-                                            "Status Reservado não encontrado."
-                                    ));
-
-            exemplar.setStatusExemplar(
-                    reservado
-            );
-
-            exemplarRepository.save(
-                    exemplar
-            );
-
-            reserva.setExemplar(
-                    exemplar
-            );
-
-            reserva.setStatusReserva(
-                    statusDisponivel
-            );
-
-            reserva.setDataMaximaPrevistaColeta(
-                    LocalDate.now()
-                            .plusDays(
-                                    duracao.getDiasUteis()
-                            )
-            );
-
+            reserva.setExemplar(exemplar);
+            reserva.setStatusReserva(statusDisponivel);
+            reserva.setDataMaximaPrevistaColeta(LocalDate.now().plusDays(duracao.getDiasUteis()));
         } else {
-
             reserva.setExemplar(null);
-
-            reserva.setStatusReserva(
-                    statusSolicitada
-            );
-
-            reserva.setDataMaximaPrevistaColeta(
-                    LocalDate.now()
-            );
+            reserva.setStatusReserva(statusSolicitada);
+            reserva.setDataMaximaPrevistaColeta(LocalDate.now());
         }
 
-        Optional<Reserva> ultimaReserva =
-                repository.findTopByObraOrderByPosicaoFilaDesc(
-                        obra
-                );
+        Optional<Reserva> ultimaReserva = repository.findTopByObraOrderByPosicaoFilaDesc(obra);
+        Integer proximaPosicao = ultimaReserva.map(r -> r.getPosicaoFila() + 1).orElse(1);
+        reserva.setPosicaoFila(proximaPosicao);
 
-        Integer proximaPosicao =
-                ultimaReserva
-                        .map(r -> r.getPosicaoFila() + 1)
-                        .orElse(1);
-
-        reserva.setPosicaoFila(
-                proximaPosicao
-        );
-
-        return repository.save(
-                reserva
-        );
-    }
-    @Transactional
-    public Reserva atualizar(
-            Reserva reserva,
-            Long idCliente,
-            Long idObra) {
-
-        Objects.requireNonNull(
-                reserva.getId()
-        );
-
-        Cliente cliente =
-                clienteRepository.findById(idCliente)
-                        .orElseThrow(() ->
-                                new RegraNegocioException(
-                                        "Cliente não encontrado."
-                                ));
-
-        Obra obra =
-                obraRepository.findById(idObra)
-                        .orElseThrow(() ->
-                                new RegraNegocioException(
-                                        "Obra não encontrada."
-                                ));
-
-        reserva.setCliente(
-                cliente
-        );
-
-        reserva.setObra(
-                obra
-        );
-
-        validar(
-                reserva
-        );
-
-        return repository.save(
-                reserva
-        );
+        return repository.save(reserva);
     }
 
     @Transactional
-    public void excluir(
-            Reserva reserva) {
+    public Reserva atualizar(Reserva reserva, Long idCliente, Long idObra) {
+        Objects.requireNonNull(reserva.getId());
 
-        Objects.requireNonNull(
-                reserva.getId()
-        );
+        Cliente cliente = clienteRepository.findById(idCliente)
+                .orElseThrow(() -> new RegraNegocioException("Cliente não encontrado."));
+
+        Obra obra = obraRepository.findById(idObra)
+                .orElseThrow(() -> new RegraNegocioException("Obra não encontrada."));
+
+        reserva.setCliente(cliente);
+        reserva.setObra(obra);
+
+        validar(reserva);
+        return repository.save(reserva);
+    }
+
+    @Transactional
+    public void excluir(Reserva reserva) {
+        Objects.requireNonNull(reserva.getId());
 
         try {
+            Obra obra = reserva.getObra();
+            Exemplar exemplar = reserva.getExemplar();
 
-            Obra obra =
-                    reserva.getObra();
-
-            Exemplar exemplar =
-                    reserva.getExemplar();
-
-            repository.delete(
-                    reserva
-            );
-
+            repository.delete(reserva);
             repository.flush();
 
             if (exemplar != null) {
+                StatusExemplar disponivel = statusExemplarRepository.findById(1L)
+                        .orElseThrow(() -> new RegraNegocioException("Status Disponível não encontrado."));
 
-                StatusExemplar disponivel =
-                        statusExemplarRepository
-                                .findById(1L)
-                                .orElseThrow(() ->
-                                        new RegraNegocioException(
-                                                "Status Disponível não encontrado."
-                                        ));
-
-                exemplar.setStatusExemplar(
-                        disponivel
-                );
-
-                exemplarRepository.save(
-                        exemplar
-                );
-
-                promoverProximaReserva(
-                        obra,
-                        exemplar
-                );
+                exemplar.setStatusExemplar(disponivel);
+                exemplarRepository.save(exemplar);
+                promoverProximaReserva(obra, exemplar);
             }
 
-            reorganizarFila(
-                    obra
-            );
+            reorganizarFila(obra);
 
-        } catch (
-                DataIntegrityViolationException e) {
-
-            throw new RegraNegocioException(
-                    "Não foi possível excluir a reserva."
-            );
+        } catch (DataIntegrityViolationException e) {
+            throw new RegraNegocioException("Não foi possível excluir a reserva.");
         }
     }
 
     @Transactional
     public void atualizarReservasExpiradas() {
-
-        StatusReserva statusExpirada =
-                statusReservaRepository
-                        .findById(3L) // Expirada
-                        .orElse(null);
-
+        StatusReserva statusExpirada = statusReservaRepository.findById(3L).orElse(null); // Expirada
         if (statusExpirada == null) {
             return;
         }
 
-        LocalDate hoje =
-                LocalDate.now();
-
-        List<Reserva> reservas =
-                repository.findAll();
+        LocalDate hoje = LocalDate.now();
+        List<Reserva> reservas = repository.findAll();
 
         for (Reserva reserva : reservas) {
+            if (reserva.getDataHoraColetaEfetiva() == null
+                    && reserva.getDataMaximaPrevistaColeta() != null
+                    && hoje.isAfter(reserva.getDataMaximaPrevistaColeta())) {
 
-            if (
-                    reserva.getDataHoraColetaEfetiva() == null
-                            &&
-                            reserva.getDataMaximaPrevistaColeta() != null
-                            &&
-                            hoje.isAfter(
-                                    reserva.getDataMaximaPrevistaColeta()
-                            )
-            ) {
+                if (reserva.getStatusReserva() != null && !reserva.getStatusReserva().getId().equals(3L)) {
+                    reserva.setStatusReserva(statusExpirada);
+                    reserva.setPosicaoFila(0);
 
-                if (
-                        reserva.getStatusReserva() != null
-                                &&
-                                !reserva.getStatusReserva()
-                                        .getId()
-                                        .equals(3L)
-                ) {
-
-                    reserva.setStatusReserva(
-                            statusExpirada
-                    );
-
-                    reserva.setPosicaoFila(
-                            0
-                    );
-
-                    Exemplar exemplarLiberado =
-                            reserva.getExemplar();
-
+                    Exemplar exemplarLiberado = reserva.getExemplar();
                     if (exemplarLiberado != null) {
+                        StatusExemplar disponivel = statusExemplarRepository.findById(1L)
+                                .orElseThrow(() -> new RegraNegocioException("Status Disponível não encontrado."));
 
-                        StatusExemplar disponivel =
-                                statusExemplarRepository
-                                        .findById(1L)
-                                        .orElseThrow(() ->
-                                                new RegraNegocioException(
-                                                        "Status Disponível não encontrado."
-                                                ));
-
-                        exemplarLiberado.setStatusExemplar(
-                                disponivel
-                        );
-
-                        exemplarRepository.save(
-                                exemplarLiberado
-                        );
+                        exemplarLiberado.setStatusExemplar(disponivel);
+                        exemplarRepository.save(exemplarLiberado);
                     }
 
-                    repository.save(
-                            reserva
-                    );
-
-                    reorganizarFila(
-                            reserva.getObra()
-                    );
+                    repository.save(reserva);
+                    reorganizarFila(reserva.getObra());
 
                     if (exemplarLiberado != null) {
-
-                        promoverProximaReserva(
-                                reserva.getObra(),
-                                exemplarLiberado
-                        );
+                        promoverProximaReserva(reserva.getObra(), exemplarLiberado);
                     }
                 }
             }
         }
     }
 
-    private void reorganizarFila(
-            Obra obra) {
-
-        List<Reserva> reservas =
-                repository.findByObraOrderByPosicaoFilaAsc(
-                        obra
-                );
-
+    private void reorganizarFila(Obra obra) {
+        List<Reserva> reservas = repository.findByObraOrderByPosicaoFilaAsc(obra);
         int posicao = 1;
 
         for (Reserva reserva : reservas) {
+            if (reserva.getStatusReserva() != null
+                    && !reserva.getStatusReserva().getId().equals(3L) // Expirada
+                    && !reserva.getStatusReserva().getId().equals(4L)) { // Cancelada
 
-            if (
-                    reserva.getStatusReserva() != null
-                            &&
-                            !reserva.getStatusReserva()
-                                    .getId()
-                                    .equals(3L) // Expirada
-                            &&
-                            !reserva.getStatusReserva()
-                                    .getId()
-                                    .equals(4L) // Cancelada
-            ) {
-
-                reserva.setPosicaoFila(
-                        posicao++
-                );
-
+                reserva.setPosicaoFila(posicao++);
             } else {
-
-                reserva.setPosicaoFila(
-                        0
-                );
+                reserva.setPosicaoFila(0);
             }
-
-            repository.save(
-                    reserva
-            );
+            repository.save(reserva);
         }
     }
 
-    private void promoverProximaReserva(
-            Obra obra,
-            Exemplar exemplar) {
-
-        List<Reserva> fila =
-                repository.findByObraOrderByPosicaoFilaAsc(
-                        obra
-                );
-
+    private void promoverProximaReserva(Obra obra, Exemplar exemplar) {
+        List<Reserva> fila = repository.findByObraOrderByPosicaoFilaAsc(obra);
         Reserva proxima = null;
 
         for (Reserva reserva : fila) {
-
-            if (
-                    reserva.getPosicaoFila() != null
-                            &&
-                            reserva.getPosicaoFila() == 1
-                            &&
-                            reserva.getStatusReserva() != null
-                            &&
-                            reserva.getStatusReserva()
-                                    .getId()
-                                    .equals(1L)
-            ) {
+            if (reserva.getPosicaoFila() != null
+                    && reserva.getPosicaoFila() == 1
+                    && reserva.getStatusReserva() != null
+                    && reserva.getStatusReserva().getId().equals(1L)) {
 
                 proxima = reserva;
                 break;
@@ -536,74 +262,31 @@ public class ReservaService {
             return;
         }
 
-        StatusReserva disponivelRetirada =
-                statusReservaRepository
-                        .findById(2L)
-                        .orElseThrow(() ->
-                                new RegraNegocioException(
-                                        "Status Disponível para Retirada não encontrado."
-                                ));
+        StatusReserva disponivelRetirada = statusReservaRepository.findById(2L)
+                .orElseThrow(() -> new RegraNegocioException("Status Disponível para Retirada não encontrado."));
 
-        StatusExemplar reservado =
-                statusExemplarRepository
-                        .findById(2L)
-                        .orElseThrow(() ->
-                                new RegraNegocioException(
-                                        "Status Reservado não encontrado."
-                                ));
+        StatusExemplar reservado = statusExemplarRepository.findById(2L)
+                .orElseThrow(() -> new RegraNegocioException("Status Reservado não encontrado."));
 
-        exemplar.setStatusExemplar(
-                reservado
-        );
+        exemplar.setStatusExemplar(reservado);
+        exemplarRepository.save(exemplar);
 
-        exemplarRepository.save(
-                exemplar
-        );
+        proxima.setExemplar(exemplar);
+        proxima.setStatusReserva(disponivelRetirada);
+        proxima.setDataMaximaPrevistaColeta(LocalDate.now().plusDays(proxima.getDuracaoPadraoReserva().getDiasUteis()));
 
-        proxima.setExemplar(
-                exemplar
-        );
-
-        proxima.setStatusReserva(
-                disponivelRetirada
-        );
-
-        proxima.setDataMaximaPrevistaColeta(
-                LocalDate.now()
-                        .plusDays(
-                                proxima
-                                        .getDuracaoPadraoReserva()
-                                        .getDiasUteis()
-                        )
-        );
-
-        repository.save(
-                proxima
-        );
+        repository.save(proxima);
     }
 
-    public void validar(
-            Reserva reserva) {
-
+    public void validar(Reserva reserva) {
         if (reserva == null) {
-
-            throw new RegraNegocioException(
-                    "Reserva inválida."
-            );
+            throw new RegraNegocioException("Reserva inválida.");
         }
-
         if (reserva.getCliente() == null) {
-
-            throw new RegraNegocioException(
-                    "Cliente obrigatório."
-            );
+            throw new RegraNegocioException("Cliente obrigatório.");
         }
-
         if (reserva.getObra() == null) {
-
-            throw new RegraNegocioException(
-                    "Obra obrigatória."
-            );
+            throw new RegraNegocioException("Obra obrigatória.");
         }
     }
 }

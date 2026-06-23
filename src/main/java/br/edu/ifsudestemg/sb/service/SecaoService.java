@@ -28,20 +28,23 @@ public class SecaoService {
     }
 
     @Transactional
-    public Secao salvar(Secao secao) {
+    public Secao salvar(Secao autor) {
 
-        validar(secao);
+        validar(autor);
 
-        String nomeNormalizado = secao.getNome().trim().toUpperCase();
+        String nomeNormalizado = autor.getNome().trim().toLowerCase();
+        autor.setNome(nomeNormalizado);
 
-        secao.setNome(nomeNormalizado);
+        Optional<Secao> existente = repository.findByNomeIgnoreCase(nomeNormalizado);
 
-        if (repository.existsByNomeIgnoreCase(nomeNormalizado)) {
-            throw new RegraNegocioException(
-                    "Já existe uma seção com esse nome");
+        if (existente.isPresent()
+                && autor.getId() != null
+                && !existente.get().getId().equals(autor.getId())) {
+
+            throw new RegraNegocioException("Já existe um autor com esse nome");
         }
 
-        return repository.save(secao);
+        return repository.save(autor);
     }
 
     @Transactional
@@ -51,18 +54,10 @@ public class SecaoService {
     }
 
     public void validar(Secao secao) {
-
         if (secao == null) {
             throw new RegraNegocioException("Seção inválida");
         }
-
-        if (secao.getNome() == null ||
-                secao.getNome().trim().equals("")) {
-
-            throw new RegraNegocioException("Nome inválido");
-        }
-
-        if (secao.getNome().length() > 100) {
+        if (secao.getNome() == null || secao.getNome().trim().equals("")) {
             throw new RegraNegocioException("Nome inválido");
         }
     }

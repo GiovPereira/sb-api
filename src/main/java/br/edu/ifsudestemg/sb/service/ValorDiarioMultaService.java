@@ -42,20 +42,16 @@ public class ValorDiarioMultaService {
 
     public ValorDiarioMulta obterValorAtual() {
         return repository.findTopByOrderByIdDesc()
-                .orElseThrow(() ->
-                        new RegraNegocioException("Nenhum valor de multa cadastrado"));
+                .orElseThrow(() -> new RegraNegocioException("Nenhum valor de multa cadastrado"));
     }
 
     public void validar(ValorDiarioMulta valorDiarioMulta) {
-
         if (valorDiarioMulta == null) {
             throw new RegraNegocioException("Objeto inválido");
         }
-
         if (valorDiarioMulta.getValorDia() == null) {
             throw new RegraNegocioException("Valor da multa inválido");
         }
-
         if (valorDiarioMulta.getValorDia().compareTo(BigDecimal.ZERO) <= 0) {
             throw new RegraNegocioException("Valor da multa inválido");
         }

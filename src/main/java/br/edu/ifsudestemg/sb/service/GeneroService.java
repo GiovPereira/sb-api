@@ -32,14 +32,16 @@ public class GeneroService {
 
         validar(genero);
 
-        String nomeNormalizado =
-                genero.getNome().trim().toUpperCase();
-
+        String nomeNormalizado = genero.getNome().trim().toLowerCase();
         genero.setNome(nomeNormalizado);
 
-        if (repository.existsByNomeIgnoreCase(nomeNormalizado)) {
-            throw new RegraNegocioException(
-                    "Já existe um gênero com esse nome");
+        Optional<Genero> existente = repository.findByNomeIgnoreCase(nomeNormalizado);
+
+        if (existente.isPresent()
+                && genero.getId() != null
+                && !existente.get().getId().equals(genero.getId())) {
+
+            throw new RegraNegocioException("Já existe um genero com esse nome");
         }
 
         return repository.save(genero);
@@ -52,18 +54,10 @@ public class GeneroService {
     }
 
     public void validar(Genero genero) {
-
         if (genero == null) {
             throw new RegraNegocioException("Gênero inválido");
         }
-
-        if (genero.getNome() == null ||
-                genero.getNome().trim().equals("")) {
-
-            throw new RegraNegocioException("Nome inválido");
-        }
-
-        if (genero.getNome().length() > 50) {
+        if (genero.getNome() == null || genero.getNome().trim().equals("")) {
             throw new RegraNegocioException("Nome inválido");
         }
     }

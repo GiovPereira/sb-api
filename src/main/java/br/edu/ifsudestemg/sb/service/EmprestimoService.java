@@ -45,16 +45,10 @@ public class EmprestimoService {
     private final ReservaRepository reservaRepository;
     private final StatusReservaRepository statusReservaRepository;
 
-    public EmprestimoService(
-            EmprestimoRepository repository,
-            ClienteRepository clienteRepository,
-            ExemplarRepository exemplarRepository,
-            DuracaoPadraoEmprestimoRepository duracaoRepository,
-            ValorDiarioMultaRepository valorMultaRepository,
-            StatusExemplarRepository statusExemplarRepository,
-            ReservaRepository reservaRepository,
-            StatusReservaRepository statusReservaRepository) {
-
+    public EmprestimoService(EmprestimoRepository repository, ClienteRepository clienteRepository,
+                             ExemplarRepository exemplarRepository, DuracaoPadraoEmprestimoRepository duracaoRepository,
+                             ValorDiarioMultaRepository valorMultaRepository, StatusExemplarRepository statusExemplarRepository,
+                             ReservaRepository reservaRepository, StatusReservaRepository statusReservaRepository) {
         this.repository = repository;
         this.clienteRepository = clienteRepository;
         this.exemplarRepository = exemplarRepository;
@@ -66,156 +60,78 @@ public class EmprestimoService {
     }
 
     public List<Emprestimo> getEmprestimos() {
-
         atualizarEmprestimosAtrasados();
-
         return repository.findAll();
     }
 
     public List<EmprestimoDTO> getEmprestimosDTO() {
-
         atualizarEmprestimosAtrasados();
-
-        return repository.findAll()
-                .stream()
+        return repository.findAll().stream()
                 .map(this::createDTO)
                 .collect(Collectors.toList());
     }
 
     public Optional<Emprestimo> getEmprestimoById(Long id) {
-
         atualizarEmprestimosAtrasados();
-
         return repository.findById(id);
     }
 
     public EmprestimoDTO createDTO(Emprestimo emprestimo) {
-
         atualizarMulta(emprestimo);
-
         ModelMapper mapper = new ModelMapper();
-
-        EmprestimoDTO dto =
-                mapper.map(
-                        emprestimo,
-                        EmprestimoDTO.class
-                );
+        EmprestimoDTO dto = mapper.map(emprestimo, EmprestimoDTO.class);
 
         if (emprestimo.getCliente() != null) {
-
-            dto.setIdCliente(
-                    emprestimo.getCliente().getId()
-            );
-
-            dto.setNomeCliente(
-                    emprestimo.getCliente().getNome()
-            );
+            dto.setIdCliente(emprestimo.getCliente().getId());
+            dto.setNomeCliente(emprestimo.getCliente().getNome());
         }
 
         if (emprestimo.getExemplar() != null) {
-
-            dto.setIdExemplar(
-                    emprestimo.getExemplar().getId()
-            );
-
-            dto.setTomboExemplar(
-                    emprestimo.getExemplar().getTombo()
-            );
-
-            dto.setCodigoBarrasExemplar(
-                    emprestimo.getExemplar().getCodigoBarras()
-            );
+            dto.setIdExemplar(emprestimo.getExemplar().getId());
+            dto.setTomboExemplar(emprestimo.getExemplar().getTombo());
+            dto.setCodigoBarrasExemplar(emprestimo.getExemplar().getCodigoBarras());
 
             if (emprestimo.getExemplar().getObra() != null) {
-
-                dto.setTituloObra(
-                        emprestimo.getExemplar()
-                                .getObra()
-                                .getTitulo()
-                );
+                dto.setTituloObra(emprestimo.getExemplar().getObra().getTitulo());
             }
         }
 
         if (emprestimo.getDuracaoPadraoEmprestimo() != null) {
-
-            dto.setIdDuracaoPadraoEmprestimo(
-                    emprestimo.getDuracaoPadraoEmprestimo().getId()
-            );
-
-            dto.setDiasUteis(
-                    emprestimo.getDuracaoPadraoEmprestimo().getDiasUteis()
-            );
+            dto.setIdDuracaoPadraoEmprestimo(emprestimo.getDuracaoPadraoEmprestimo().getId());
+            dto.setDiasUteis(emprestimo.getDuracaoPadraoEmprestimo().getDiasUteis());
         }
 
         if (emprestimo.getValorDiarioMulta() != null) {
-
-            dto.setIdValorDiarioMulta(
-                    emprestimo.getValorDiarioMulta().getId()
-            );
-
-            dto.setValorDia(
-                    emprestimo.getValorDiarioMulta().getValorDia()
-            );
+            dto.setIdValorDiarioMulta(emprestimo.getValorDiarioMulta().getId());
+            dto.setValorDia(emprestimo.getValorDiarioMulta().getValorDia());
         }
 
         return dto;
     }
 
     @Transactional
-    public Emprestimo salvar(
-            Emprestimo emprestimo,
-            Long idCliente,
-            Long idExemplar) {
+    public Emprestimo salvar(Emprestimo emprestimo, Long idCliente, Long idExemplar) {
+        Cliente cliente = clienteRepository.findById(idCliente)
+                .orElseThrow(() -> new RegraNegocioException("Cliente não encontrado."));
 
-        Cliente cliente =
-                clienteRepository.findById(idCliente)
-                        .orElseThrow(() ->
-                                new RegraNegocioException(
-                                        "Cliente não encontrado."
-                                ));
-
-        Exemplar exemplar =
-                exemplarRepository.findById(idExemplar)
-                        .orElseThrow(() ->
-                                new RegraNegocioException(
-                                        "Exemplar não encontrado."
-                                ));
+        Exemplar exemplar = exemplarRepository.findById(idExemplar)
+                .orElseThrow(() -> new RegraNegocioException("Exemplar não encontrado."));
 
         if (!exemplar.getStatusExemplar().getId().equals(1L)) {
-
-            throw new RegraNegocioException(
-                    "Somente exemplares disponíveis podem ser emprestados."
-            );
+            throw new RegraNegocioException("Somente exemplares disponíveis podem ser emprestados.");
         }
 
-        DuracaoPadraoEmprestimo duracao =
-                duracaoRepository.findTopByOrderByIdDesc()
-                        .orElseThrow(() ->
-                                new RegraNegocioException(
-                                        "Nenhuma duração padrão cadastrada."
-                                ));
+        DuracaoPadraoEmprestimo duracao = duracaoRepository.findTopByOrderByIdDesc()
+                .orElseThrow(() -> new RegraNegocioException("Nenhuma duração padrão cadastrada."));
 
-        ValorDiarioMulta multa =
-                valorMultaRepository.findTopByOrderByIdDesc()
-                        .orElseThrow(() ->
-                                new RegraNegocioException(
-                                        "Nenhum valor de multa cadastrado."
-                                ));
+        ValorDiarioMulta multa = valorMultaRepository.findTopByOrderByIdDesc()
+                .orElseThrow(() -> new RegraNegocioException("Nenhum valor de multa cadastrado."));
 
-        StatusExemplar emPosse =
-                statusExemplarRepository.findById(3L)
-                        .orElseThrow(() ->
-                                new RegraNegocioException(
-                                        "Status Em Posse não encontrado."
-                                ));
+        StatusExemplar emPosse = statusExemplarRepository.findById(3L)
+                .orElseThrow(() -> new RegraNegocioException("Status Em Posse não encontrado."));
 
-        exemplar.setStatusExemplar(
-                emPosse
-        );
-
-        exemplarRepository.save(
-                exemplar
-        );
+        exemplar.setStatusExemplar(emPosse);
+        exemplarRepository.save(exemplar);
 
         emprestimo.setCliente(cliente);
         emprestimo.setExemplar(exemplar);
@@ -227,363 +143,151 @@ public class EmprestimoService {
         emprestimo.setMulta(BigDecimal.ZERO);
 
         validar(emprestimo);
-
         return repository.save(emprestimo);
     }
 
     @Transactional
     public Emprestimo registrarEntrega(Long idEmprestimo) {
-
-        Emprestimo emprestimo =
-                repository.findById(idEmprestimo)
-                        .orElseThrow(() ->
-                                new RegraNegocioException(
-                                        "Empréstimo não encontrado."
-                                ));
+        Emprestimo emprestimo = repository.findById(idEmprestimo)
+                .orElseThrow(() -> new RegraNegocioException("Empréstimo não encontrado."));
 
         if (emprestimo.getDataHoraEntrega() != null) {
-
-            throw new RegraNegocioException(
-                    "Empréstimo já finalizado."
-            );
+            throw new RegraNegocioException("Empréstimo já finalizado.");
         }
 
         atualizarMulta(emprestimo);
+        emprestimo.setDataHoraEntrega(LocalDateTime.now());
 
-        emprestimo.setDataHoraEntrega(
-                LocalDateTime.now()
-        );
+        StatusExemplar disponivel = statusExemplarRepository.findById(1L)
+                .orElseThrow(() -> new RegraNegocioException("Status Disponível não encontrado."));
 
-        StatusExemplar disponivel =
-                statusExemplarRepository.findById(1L)
-                        .orElseThrow(() ->
-                                new RegraNegocioException(
-                                        "Status Disponível não encontrado."
-                                ));
+        Exemplar exemplar = emprestimo.getExemplar();
+        exemplar.setStatusExemplar(disponivel);
 
-        Exemplar exemplar =
-                emprestimo.getExemplar();
+        exemplarRepository.save(exemplar);
+        repository.save(emprestimo);
 
-        exemplar.setStatusExemplar(
-                disponivel
-        );
-
-        exemplarRepository.save(
-                exemplar
-        );
-
-        repository.save(
-                emprestimo
-        );
-
-        promoverReserva(
-                exemplar
-        );
-
+        promoverReserva(exemplar);
         return emprestimo;
     }
-    private void promoverReserva(
-            Exemplar exemplar) {
 
-        Obra obra =
-                exemplar.getObra();
-
-        List<Reserva> fila =
-                reservaRepository
-                        .findByObraIdAndStatusReservaIdOrderByPosicaoFilaAsc(
-                                obra.getId(),
-                                1L
-                        );
+    private void promoverReserva(Exemplar exemplar) {
+        Obra obra = exemplar.getObra();
+        List<Reserva> fila = reservaRepository.findByObraIdAndStatusReservaIdOrderByPosicaoFilaAsc(obra.getId(), 1L);
 
         if (fila.isEmpty()) {
             return;
         }
 
-        Reserva reserva =
-                fila.get(0);
+        Reserva reserva = fila.get(0);
+        StatusReserva disponivelRetirada = statusReservaRepository.findById(2L)
+                .orElseThrow(() -> new RegraNegocioException("Status Disponível Para Retirada não encontrado."));
 
-        StatusReserva disponivelRetirada =
-                statusReservaRepository
-                        .findById(2L)
-                        .orElseThrow(() ->
-                                new RegraNegocioException(
-                                        "Status Disponível Para Retirada não encontrado."
-                                ));
+        StatusExemplar reservado = statusExemplarRepository.findById(2L)
+                .orElseThrow(() -> new RegraNegocioException("Status Reservado não encontrado."));
 
-        StatusExemplar reservado =
-                statusExemplarRepository
-                        .findById(2L)
-                        .orElseThrow(() ->
-                                new RegraNegocioException(
-                                        "Status Reservado não encontrado."
-                                ));
+        exemplar.setStatusExemplar(reservado);
+        exemplarRepository.save(exemplar);
 
-        exemplar.setStatusExemplar(
-                reservado
-        );
+        reserva.setExemplar(exemplar);
+        reserva.setStatusReserva(disponivelRetirada);
+        reserva.setDataMaximaPrevistaColeta(LocalDate.now().plusDays(reserva.getDuracaoPadraoReserva().getDiasUteis()));
 
-        exemplarRepository.save(
-                exemplar
-        );
-
-        reserva.setExemplar(
-                exemplar
-        );
-
-        reserva.setStatusReserva(
-                disponivelRetirada
-        );
-
-        reserva.setDataMaximaPrevistaColeta(
-                LocalDate.now()
-                        .plusDays(
-                                reserva.getDuracaoPadraoReserva()
-                                        .getDiasUteis()
-                        )
-        );
-
-        reservaRepository.save(
-                reserva
-        );
+        reservaRepository.save(reserva);
     }
 
     @Transactional
-    public Emprestimo atualizar(
-            Emprestimo emprestimo,
-            Long idCliente,
-            Long idExemplar) {
+    public Emprestimo atualizar(Emprestimo emprestimo, Long idCliente, Long idExemplar) {
+        Cliente cliente = clienteRepository.findById(idCliente)
+                .orElseThrow(() -> new RegraNegocioException("Cliente não encontrado."));
 
-        Cliente cliente =
-                clienteRepository.findById(idCliente)
-                        .orElseThrow(() ->
-                                new RegraNegocioException(
-                                        "Cliente não encontrado."
-                                ));
+        Exemplar exemplar = exemplarRepository.findById(idExemplar)
+                .orElseThrow(() -> new RegraNegocioException("Exemplar não encontrado."));
 
-        Exemplar exemplar =
-                exemplarRepository.findById(idExemplar)
-                        .orElseThrow(() ->
-                                new RegraNegocioException(
-                                        "Exemplar não encontrado."
-                                ));
+        Emprestimo original = repository.findById(emprestimo.getId())
+                .orElseThrow(() -> new RegraNegocioException("Empréstimo não encontrado."));
 
-        Emprestimo original =
-                repository.findById(
-                                emprestimo.getId()
-                        )
-                        .orElseThrow(() ->
-                                new RegraNegocioException(
-                                        "Empréstimo não encontrado."
-                                ));
+        emprestimo.setCliente(cliente);
+        emprestimo.setExemplar(exemplar);
+        emprestimo.setDuracaoPadraoEmprestimo(original.getDuracaoPadraoEmprestimo());
+        emprestimo.setValorDiarioMulta(original.getValorDiarioMulta());
+        emprestimo.setDataHoraEmprestimo(original.getDataHoraEmprestimo());
+        emprestimo.setDataPrevistaDevolucao(original.getDataPrevistaDevolucao());
 
-        emprestimo.setCliente(
-                cliente
-        );
+        atualizarMulta(emprestimo);
+        validar(emprestimo);
 
-        emprestimo.setExemplar(
-                exemplar
-        );
-
-        emprestimo.setDuracaoPadraoEmprestimo(
-                original.getDuracaoPadraoEmprestimo()
-        );
-
-        emprestimo.setValorDiarioMulta(
-                original.getValorDiarioMulta()
-        );
-
-        emprestimo.setDataHoraEmprestimo(
-                original.getDataHoraEmprestimo()
-        );
-
-        emprestimo.setDataPrevistaDevolucao(
-                original.getDataPrevistaDevolucao()
-        );
-
-        atualizarMulta(
-                emprestimo
-        );
-
-        validar(
-                emprestimo
-        );
-
-        return repository.save(
-                emprestimo
-        );
+        return repository.save(emprestimo);
     }
 
     @Transactional
-    public void excluir(
-            Emprestimo emprestimo) {
-
-        Objects.requireNonNull(
-                emprestimo.getId()
-        );
+    public void excluir(Emprestimo emprestimo) {
+        Objects.requireNonNull(emprestimo.getId());
 
         try {
-
-            repository.delete(
-                    emprestimo
-            );
-
+            repository.delete(emprestimo);
             repository.flush();
-
-        } catch (
-                DataIntegrityViolationException e) {
-
-            throw new RegraNegocioException(
-                    "Não foi possível excluir o empréstimo."
-            );
+        } catch (DataIntegrityViolationException e) {
+            throw new RegraNegocioException("Não foi possível excluir o empréstimo.");
         }
     }
 
     @Transactional
     public void atualizarEmprestimosAtrasados() {
-
-        List<Emprestimo> emprestimos =
-                repository.findAll();
-
-        StatusExemplar emAtraso =
-                statusExemplarRepository
-                        .findById(4L)
-                        .orElse(null);
+        List<Emprestimo> emprestimos = repository.findAll();
+        StatusExemplar emAtraso = statusExemplarRepository.findById(4L).orElse(null);
 
         if (emAtraso == null) {
             return;
         }
 
-        LocalDate hoje =
-                LocalDate.now();
+        LocalDate hoje = LocalDate.now();
 
         for (Emprestimo emprestimo : emprestimos) {
+            if (emprestimo.getDataHoraEntrega() == null && hoje.isAfter(emprestimo.getDataPrevistaDevolucao())) {
+                Exemplar exemplar = emprestimo.getExemplar();
 
-            if (
-                    emprestimo.getDataHoraEntrega() == null
-                            &&
-                            hoje.isAfter(
-                                    emprestimo.getDataPrevistaDevolucao()
-                            )
-            ) {
-
-                Exemplar exemplar =
-                        emprestimo.getExemplar();
-
-                if (
-                        exemplar != null
-                                &&
-                                exemplar.getStatusExemplar() != null
-                                &&
-                                exemplar.getStatusExemplar()
-                                        .getId()
-                                        .equals(3L)
-                ) {
-
-                    exemplar.setStatusExemplar(
-                            emAtraso
-                    );
-
-                    exemplarRepository.save(
-                            exemplar
-                    );
+                if (exemplar != null && exemplar.getStatusExemplar() != null && exemplar.getStatusExemplar().getId().equals(3L)) {
+                    exemplar.setStatusExemplar(emAtraso);
+                    exemplarRepository.save(exemplar);
                 }
 
-                atualizarMulta(
-                        emprestimo
-                );
-
-                repository.save(
-                        emprestimo
-                );
+                atualizarMulta(emprestimo);
+                repository.save(emprestimo);
             }
         }
     }
 
-    private void atualizarMulta(
-            Emprestimo emprestimo) {
-
-        if (
-                emprestimo.getDataHoraEntrega()
-                        != null
-        ) {
+    private void atualizarMulta(Emprestimo emprestimo) {
+        if (emprestimo.getDataHoraEntrega() != null) {
             return;
         }
 
-        LocalDate hoje =
-                LocalDate.now();
+        LocalDate hoje = LocalDate.now();
 
-        if (
-                !hoje.isAfter(
-                        emprestimo.getDataPrevistaDevolucao()
-                )
-        ) {
-
-            emprestimo.setMulta(
-                    BigDecimal.ZERO
-            );
-
+        if (!hoje.isAfter(emprestimo.getDataPrevistaDevolucao())) {
+            emprestimo.setMulta(BigDecimal.ZERO);
             return;
         }
 
-        long diasAtraso =
-                ChronoUnit.DAYS.between(
-                        emprestimo.getDataPrevistaDevolucao(),
-                        hoje
-                );
+        long diasAtraso = ChronoUnit.DAYS.between(emprestimo.getDataPrevistaDevolucao(), hoje);
+        BigDecimal multa = emprestimo.getValorDiarioMulta().getValorDia().multiply(BigDecimal.valueOf(diasAtraso));
 
-        BigDecimal multa =
-                emprestimo.getValorDiarioMulta()
-                        .getValorDia()
-                        .multiply(
-                                BigDecimal.valueOf(
-                                        diasAtraso
-                                )
-                        );
-
-        emprestimo.setMulta(
-                multa
-        );
+        emprestimo.setMulta(multa);
     }
 
-    public void validar(
-            Emprestimo emprestimo) {
-
-        if (
-                emprestimo.getCliente() == null
-        ) {
-
-            throw new RegraNegocioException(
-                    "Informe o cliente."
-            );
+    public void validar(Emprestimo emprestimo) {
+        if (emprestimo.getCliente() == null) {
+            throw new RegraNegocioException("Informe o cliente.");
         }
-
-        if (
-                emprestimo.getExemplar() == null
-        ) {
-
-            throw new RegraNegocioException(
-                    "Informe o exemplar."
-            );
+        if (emprestimo.getExemplar() == null) {
+            throw new RegraNegocioException("Informe o exemplar.");
         }
-
-        if (
-                emprestimo.getDuracaoPadraoEmprestimo()
-                        == null
-        ) {
-
-            throw new RegraNegocioException(
-                    "Duração padrão não encontrada."
-            );
+        if (emprestimo.getDuracaoPadraoEmprestimo() == null) {
+            throw new RegraNegocioException("Duração padrão não encontrada.");
         }
-
-        if (
-                emprestimo.getValorDiarioMulta()
-                        == null
-        ) {
-
-            throw new RegraNegocioException(
-                    "Valor da multa não encontrado."
-            );
+        if (emprestimo.getValorDiarioMulta() == null) {
+            throw new RegraNegocioException("Valor da multa não encontrado.");
         }
     }
 }

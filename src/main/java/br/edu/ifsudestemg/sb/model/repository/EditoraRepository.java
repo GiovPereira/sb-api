@@ -10,6 +10,4 @@ import java.util.Optional;
 public interface EditoraRepository extends JpaRepository<Editora, Long> {
 
     Optional<Editora> findByNomeIgnoreCase(String nome);
-
-    boolean existsByNomeIgnoreCase(String nome);
 }

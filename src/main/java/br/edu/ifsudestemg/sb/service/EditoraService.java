@@ -32,14 +32,16 @@ public class EditoraService {
 
         validar(editora);
 
-        String nomeNormalizado =
-                editora.getNome().trim().toUpperCase();
-
+        String nomeNormalizado = editora.getNome().trim().toLowerCase();
         editora.setNome(nomeNormalizado);
 
-        if (repository.existsByNomeIgnoreCase(nomeNormalizado)) {
-            throw new RegraNegocioException(
-                    "Já existe uma editora com esse nome");
+        Optional<Editora> existente = repository.findByNomeIgnoreCase(nomeNormalizado);
+
+        if (existente.isPresent()
+                && editora.getId() != null
+                && !existente.get().getId().equals(editora.getId())) {
+
+            throw new RegraNegocioException("Já existe um editora com esse nome");
         }
 
         return repository.save(editora);
@@ -57,13 +59,7 @@ public class EditoraService {
             throw new RegraNegocioException("Editora inválida");
         }
 
-        if (editora.getNome() == null ||
-                editora.getNome().trim().equals("")) {
-
-            throw new RegraNegocioException("Nome inválido");
-        }
-
-        if (editora.getNome().length() > 100) {
+        if (editora.getNome() == null || editora.getNome().trim().equals("")) {
             throw new RegraNegocioException("Nome inválido");
         }
     }

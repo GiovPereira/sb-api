@@ -20,12 +20,23 @@ public class Cliente {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String nome;
+
+    @Column(nullable = false, unique = true, length = 11)
     private String cpf;
+
     private LocalDate dataNascimento;
+
+    @Column(length = 11)
     private String email;
+
+    @Column(length = 11)
     private String telefone;
+
+    @Column(length = 8)
     private String cep;
+
     private String logradouro;
     private Integer numero;
     private String complemento;

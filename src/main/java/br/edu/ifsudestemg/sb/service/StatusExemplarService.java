@@ -32,14 +32,16 @@ public class StatusExemplarService {
 
         validar(statusExemplar);
 
-        String nomeNormalizado =
-                statusExemplar.getNome().trim().toUpperCase();
-
+        String nomeNormalizado = statusExemplar.getNome().trim().toLowerCase();
         statusExemplar.setNome(nomeNormalizado);
 
-        if (repository.existsByNomeIgnoreCase(nomeNormalizado)) {
-            throw new RegraNegocioException(
-                    "Já existe um status com esse nome");
+        Optional<StatusExemplar> existente = repository.findByNomeIgnoreCase(nomeNormalizado);
+
+        if (existente.isPresent()
+                && statusExemplar.getId() != null
+                && !existente.get().getId().equals(statusExemplar.getId())) {
+
+            throw new RegraNegocioException("Já existe um status com esse nome");
         }
 
         return repository.save(statusExemplar);
@@ -52,18 +54,10 @@ public class StatusExemplarService {
     }
 
     public void validar(StatusExemplar statusExemplar) {
-
         if (statusExemplar == null) {
             throw new RegraNegocioException("Status exemplar inválido");
         }
-
-        if (statusExemplar.getNome() == null ||
-                statusExemplar.getNome().trim().equals("")) {
-
-            throw new RegraNegocioException("Nome inválido");
-        }
-
-        if (statusExemplar.getNome().length() > 50) {
+        if (statusExemplar.getNome() == null || statusExemplar.getNome().trim().equals("") || statusExemplar.getNome().length() > 50) {
             throw new RegraNegocioException("Nome inválido");
         }
     }

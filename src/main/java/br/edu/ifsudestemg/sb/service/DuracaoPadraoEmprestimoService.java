@@ -30,13 +30,11 @@ public class DuracaoPadraoEmprestimoService {
     public DuracaoPadraoEmprestimo obterAtual() {
         return repository.findTopByOrderByIdDesc()
                 .orElseThrow(() ->
-                        new RegraNegocioException(
-                                "Nenhuma duração cadastrada"));
+                        new RegraNegocioException("Nenhuma duração cadastrada"));
     }
 
     @Transactional
-    public DuracaoPadraoEmprestimo salvar(
-            DuracaoPadraoEmprestimo duracao) {
+    public DuracaoPadraoEmprestimo salvar(DuracaoPadraoEmprestimo duracao) {
 
         validar(duracao);
 
@@ -55,14 +53,8 @@ public class DuracaoPadraoEmprestimoService {
             throw new RegraNegocioException("Duração inválida");
         }
 
-        if (duracao.getDiasUteis() == null) {
-            throw new RegraNegocioException(
-                    "Dias úteis inválido");
-        }
-
-        if (duracao.getDiasUteis() <= 0) {
-            throw new RegraNegocioException(
-                    "Dias úteis inválido");
+        if (duracao.getDiasUteis() == null || duracao.getDiasUteis() <= 0) {
+            throw new RegraNegocioException("Informe dias úteis inválido");
         }
     }
 }

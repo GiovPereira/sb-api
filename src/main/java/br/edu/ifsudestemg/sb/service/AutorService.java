@@ -28,7 +28,21 @@ public class AutorService {
 
     @Transactional
     public Autor salvar(Autor autor) {
+
         validar(autor);
+
+        String nomeNormalizado = autor.getNome().trim().toLowerCase();
+        autor.setNome(nomeNormalizado);
+
+        Optional<Autor> existente = repository.findByNomeIgnoreCase(nomeNormalizado);
+
+        if (existente.isPresent()
+                && autor.getId() != null
+                && !existente.get().getId().equals(autor.getId())) {
+
+            throw new RegraNegocioException("Já existe um autor com esse nome");
+        }
+
         return repository.save(autor);
     }
     
@@ -40,7 +54,7 @@ public class AutorService {
 
     public void validar(Autor autor) {
         if (autor.getNome() == null || autor.getNome().trim().equals("")) {
-            throw new RegraNegocioException("Nome inválido");
+            throw new RegraNegocioException("Informe o nome");
         }
     }
     

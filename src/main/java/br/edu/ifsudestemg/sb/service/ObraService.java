@@ -52,11 +52,16 @@ public class ObraService {
 
     @Transactional
     public Obra salvar(Obra obra, List<Long> autoresIds, List<Long> editorasIds, List<Long> generosIds, List<Long> idiomasIds) {
+
         validar(obra);
 
         if (obraRepository.existsByIsbn(obra.getIsbn())) {
-            throw new RegraNegocioException("Já existe uma obra cadastrada com este ISBN.");
+            throw new RegraNegocioException("Já existe uma obra cadastrada com este ISBN");
         }
+
+        String nomeNormalizado = obra.getTitulo().trim().toLowerCase();
+
+        obra.setTitulo(nomeNormalizado);
 
         obra = obraRepository.save(obra);
         salvarAutores(obra, autoresIds);
@@ -69,17 +74,18 @@ public class ObraService {
 
     @Transactional
     public Obra atualizar(Obra obra, List<Long> autoresIds, List<Long> editorasIds, List<Long> generosIds, List<Long> idiomasIds) {
+
         validar(obra);
 
         if (obra.getId() == null) {
-            throw new RegraNegocioException("Id da obra obrigatório.");
+            throw new RegraNegocioException("Obra inválida");
         }
 
         Obra obraBanco = obraRepository.findById(obra.getId())
-                .orElseThrow(() -> new RegraNegocioException("Obra não encontrada."));
+                .orElseThrow(() -> new RegraNegocioException("Obra não encontrada"));
 
         if (obraRepository.existsByIsbnAndIdNot(obra.getIsbn(), obra.getId())) {
-            throw new RegraNegocioException("Já existe outra obra cadastrada com este ISBN.");
+            throw new RegraNegocioException("Já existe outra obra cadastrada com este ISBN");
         }
 
         obraBanco.setTitulo(obra.getTitulo());
@@ -99,21 +105,24 @@ public class ObraService {
     @Transactional
     public void excluir(Obra obra) {
         if (obra.getId() == null) {
-            throw new RegraNegocioException("Obra sem id.");
+            throw new RegraNegocioException("Obra sem id");
         }
         removerRelacionamentos(obra.getId());
         obraRepository.delete(obra);
     }
 
     public void validar(Obra obra) {
+        if (obra == null) {
+            throw new RegraNegocioException("Obra inválida");
+        }
         if (obra.getTitulo() == null || obra.getTitulo().trim().isEmpty()) {
-            throw new RegraNegocioException("Título obrigatório.");
+            throw new RegraNegocioException("Informe o título");
         }
         if (obra.getIsbn() == null || obra.getIsbn().trim().isEmpty()) {
-            throw new RegraNegocioException("ISBN obrigatório.");
+            throw new RegraNegocioException("Informe o ISBN");
         }
         if (obra.getEdicao() == null || obra.getEdicao().trim().isEmpty()) {
-            throw new RegraNegocioException("Edição obrigatória.");
+            throw new RegraNegocioException("Informe a edição");
         }
     }
 
@@ -131,7 +140,7 @@ public class ObraService {
             if (obraAutorRepository.existsByObra_IdAndAutor_Id(obra.getId(), autorId)) continue;
 
             Autor autor = autorRepository.findById(autorId)
-                    .orElseThrow(() -> new RegraNegocioException("Autor não encontrado."));
+                    .orElseThrow(() -> new RegraNegocioException("Autor não encontrado"));
 
             ObraAutor obraAutor = new ObraAutor();
             obraAutor.setObra(obra);
@@ -147,7 +156,7 @@ public class ObraService {
             if (obraEditoraRepository.existsByObra_IdAndEditora_Id(obra.getId(), editoraId)) continue;
 
             Editora editora = editoraRepository.findById(editoraId)
-                    .orElseThrow(() -> new RegraNegocioException("Editora não encontrada."));
+                    .orElseThrow(() -> new RegraNegocioException("Editora não encontrada"));
 
             ObraEditora obraEditora = new ObraEditora();
             obraEditora.setObra(obra);
@@ -163,7 +172,7 @@ public class ObraService {
             if (obraGeneroRepository.existsByObra_IdAndGenero_Id(obra.getId(), generoId)) continue;
 
             Genero genero = generoRepository.findById(generoId)
-                    .orElseThrow(() -> new RegraNegocioException("Gênero não encontrado."));
+                    .orElseThrow(() -> new RegraNegocioException("Gênero não encontrado"));
 
             ObraGenero obraGenero = new ObraGenero();
             obraGenero.setObra(obra);
@@ -179,7 +188,7 @@ public class ObraService {
             if (obraIdiomaRepository.existsByObra_IdAndIdioma_Id(obra.getId(), idiomaId)) continue;
 
             Idioma idioma = idiomaRepository.findById(idiomaId)
-                    .orElseThrow(() -> new RegraNegocioException("Idioma não encontrado."));
+                    .orElseThrow(() -> new RegraNegocioException("Idioma não encontrado"));
 
             ObraIdioma obraIdioma = new ObraIdioma();
             obraIdioma.setObra(obra);

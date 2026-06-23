@@ -28,21 +28,23 @@ public class IdiomaService {
     }
 
     @Transactional
-    public Idioma salvar(Idioma idioma) {
+    public Idioma salvar(Idioma autor) {
 
-        validar(idioma);
+        validar(autor);
 
-        String nomeNormalizado =
-                idioma.getNome().trim().toUpperCase();
+        String nomeNormalizado = autor.getNome().trim().toLowerCase();
+        autor.setNome(nomeNormalizado);
 
-        idioma.setNome(nomeNormalizado);
+        Optional<Idioma> existente = repository.findByNomeIgnoreCase(nomeNormalizado);
 
-        if (repository.existsByNomeIgnoreCase(nomeNormalizado)) {
-            throw new RegraNegocioException(
-                    "Já existe um idioma com esse nome");
+        if (existente.isPresent()
+                && autor.getId() != null
+                && !existente.get().getId().equals(autor.getId())) {
+
+            throw new RegraNegocioException("Já existe um autor com esse nome");
         }
 
-        return repository.save(idioma);
+        return repository.save(autor);
     }
 
     @Transactional
@@ -52,18 +54,10 @@ public class IdiomaService {
     }
 
     public void validar(Idioma idioma) {
-
         if (idioma == null) {
             throw new RegraNegocioException("Idioma inválido");
         }
-
-        if (idioma.getNome() == null ||
-                idioma.getNome().trim().equals("")) {
-
-            throw new RegraNegocioException("Nome inválido");
-        }
-
-        if (idioma.getNome().length() > 50) {
+        if (idioma.getNome() == null || idioma.getNome().trim().equals("") || idioma.getNome().length() > 50) {
             throw new RegraNegocioException("Nome inválido");
         }
     }

@@ -29,7 +29,21 @@ public class StatusReservaService {
 
     @Transactional
     public StatusReserva salvar(StatusReserva statusReserva) {
+
         validar(statusReserva);
+
+        String nomeNormalizado = statusReserva.getNome().trim().toLowerCase();
+        statusReserva.setNome(nomeNormalizado);
+
+        Optional<StatusReserva> existente = repository.findByNomeIgnoreCase(nomeNormalizado);
+
+        if (existente.isPresent()
+                && statusReserva.getId() != null
+                && !existente.get().getId().equals(statusReserva.getId())) {
+
+            throw new RegraNegocioException("Já existe um status com esse nome");
+        }
+
         return repository.save(statusReserva);
     }
 
@@ -40,18 +54,10 @@ public class StatusReservaService {
     }
 
     public void validar(StatusReserva statusReserva) {
-
         if (statusReserva == null) {
             throw new RegraNegocioException("Status da reserva inválido");
         }
-
-        if (statusReserva.getNome() == null ||
-                statusReserva.getNome().trim().equals("")) {
-
-            throw new RegraNegocioException("Nome inválido");
-        }
-
-        if (statusReserva.getNome().length() > 50) {
+        if (statusReserva.getNome() == null || statusReserva.getNome().trim().equals("") || statusReserva.getNome().length() > 50) {
             throw new RegraNegocioException("Nome inválido");
         }
     }

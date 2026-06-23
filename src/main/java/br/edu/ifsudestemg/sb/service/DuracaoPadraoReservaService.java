@@ -36,8 +36,7 @@ public class DuracaoPadraoReservaService
     }
 
     @Transactional
-    public DuracaoPadraoReserva salvar(
-            DuracaoPadraoReserva duracao) {
+    public DuracaoPadraoReserva salvar(DuracaoPadraoReserva duracao) {
 
         validar(duracao);
 
@@ -56,14 +55,8 @@ public class DuracaoPadraoReservaService
             throw new RegraNegocioException("Duração inválida");
         }
 
-        if (duracao.getDiasUteis() == null) {
-            throw new RegraNegocioException(
-                    "Dias úteis inválido");
-        }
-
-        if (duracao.getDiasUteis() <= 0) {
-            throw new RegraNegocioException(
-                    "Dias úteis inválido");
+        if (duracao.getDiasUteis() == null || duracao.getDiasUteis() <= 0) {
+            throw new RegraNegocioException("Informe dias úteis inválido");
         }
     }
 }
