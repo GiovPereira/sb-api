@@ -190,7 +190,7 @@ public class ExemplarService {
             if (atual.equals(1L) || atual.equals(2L)) return;
             throw new RegraNegocioException("Transição inválida para extraviado.");
         }
-        
+
         if (novo.equals(6L)) {
             if (atual.equals(1L) || atual.equals(2L)) return;
             throw new RegraNegocioException("Transição inválida para danificado.");
