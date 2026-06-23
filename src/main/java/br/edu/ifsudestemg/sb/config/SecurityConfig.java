@@ -47,40 +47,41 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                .cors().disable()
+                .cors().and()
                 .csrf().disable()
                 .authorizeRequests()
 
                 .antMatchers(HttpMethod.POST, "/api/v1/usuarios").permitAll()
                 .antMatchers("/api/v1/usuarios/auth").permitAll()
-                .antMatchers("/v2/api-docs", "/swagger-resources/**", "/swagger-ui.html", "/webjars/**").permitAll()
 
-                .antMatchers("/api/v1/usuarios/**").authenticated()
-
-                .antMatchers("/api/v1/autores/**").hasRole("ADMIN")
-                .antMatchers("/api/v1/editoras/**").hasRole("ADMIN")
-                .antMatchers("/api/v1/generos/**").hasRole("ADMIN")
-                .antMatchers("/api/v1/idiomas/**").hasRole("ADMIN")
-                .antMatchers("/api/v1/secoes/**").hasRole("ADMIN")
-                .antMatchers("/api/v1/statusexemplares/**").hasRole("ADMIN")
-                .antMatchers("/api/v1/statusreservas/**").hasRole("ADMIN")
+                .antMatchers("/api/v1/usuarios/**").hasRole("ADMIN")
+                .antMatchers("/api/v1/valordiariomultas/**").hasRole("ADMIN")
                 .antMatchers("/api/v1/duracaopadraoemprestimos/**").hasRole("ADMIN")
                 .antMatchers("/api/v1/duracaopadraoreservas/**").hasRole("ADMIN")
-                .antMatchers("/api/v1/valordiariomultas/**").hasRole("ADMIN")
-                .antMatchers("/api/v1/obras/**").hasRole("ADMIN")
-                .antMatchers("/api/v1/exemplares/**").hasRole("ADMIN")
 
+                .antMatchers("/api/v1/clientes/**").hasAnyRole("USER", "ADMIN")
                 .antMatchers("/api/v1/emprestimos/**").hasAnyRole("USER", "ADMIN")
                 .antMatchers("/api/v1/reservas/**").hasAnyRole("USER", "ADMIN")
-                .antMatchers("/api/v1/clientes/**").hasAnyRole("USER", "ADMIN")
+
+                .antMatchers(HttpMethod.GET, "/api/v1/autores/**", "/api/v1/editoras/**", "/api/v1/generos/**",
+                        "/api/v1/idiomas/**", "/api/v1/secoes/**", "/api/v1/obras/**", "/api/v1/exemplares/**")
+                .hasAnyRole("USER", "ADMIN")
+
+                .antMatchers("/api/v1/autores/**", "/api/v1/editoras/**", "/api/v1/generos/**",
+                        "/api/v1/idiomas/**", "/api/v1/secoes/**", "/api/v1/obras/**", "/api/v1/exemplares/**")
+                .hasRole("ADMIN")
 
                 .anyRequest().authenticated()
 
                 .and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+
                 .and()
-                .addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(
+                        jwtFilter(),
+                        UsernamePasswordAuthenticationFilter.class
+                );
     }
 
     @Override
