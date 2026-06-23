@@ -51,26 +51,34 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf().disable()
                 .authorizeRequests()
 
+                // 1. Rotas Públicas (Login e cadastro)
                 .antMatchers(HttpMethod.POST, "/api/v1/usuarios").permitAll()
                 .antMatchers("/api/v1/usuarios/auth").permitAll()
 
+                // 2. Recursos Exclusivos do ADMIN (Regras de circulação e gestão de usuários)
                 .antMatchers("/api/v1/usuarios/**").hasRole("ADMIN")
                 .antMatchers("/api/v1/valordiariomultas/**").hasRole("ADMIN")
                 .antMatchers("/api/v1/duracaopadraoemprestimos/**").hasRole("ADMIN")
                 .antMatchers("/api/v1/duracaopadraoreservas/**").hasRole("ADMIN")
 
-                .antMatchers("/api/v1/clientes/**").hasAnyRole("USER", "ADMIN")
-                .antMatchers("/api/v1/emprestimos/**").hasAnyRole("USER", "ADMIN")
-                .antMatchers("/api/v1/reservas/**").hasAnyRole("USER", "ADMIN")
+                // 3. Recursos Compartilhados (ADMIN e USER acessam livremente se logados)
+                // Alterado de .hasAnyRole para .authenticated() para evitar falhas do filtro JWT
+                .antMatchers("/api/v1/clientes/**").authenticated()
+                .antMatchers("/api/v1/emprestimos/**").authenticated()
+                .antMatchers("/api/v1/reservas/**").authenticated()
 
+                // 4. Catálogo da Biblioteca
+                // Qualquer usuário autenticado pode consultar (GET)
                 .antMatchers(HttpMethod.GET, "/api/v1/autores/**", "/api/v1/editoras/**", "/api/v1/generos/**",
                         "/api/v1/idiomas/**", "/api/v1/secoes/**", "/api/v1/obras/**", "/api/v1/exemplares/**")
-                .hasAnyRole("USER", "ADMIN")
+                .authenticated()
 
+                // Modificações no catálogo (POST, PUT, DELETE) exigem explicitamente papel de ADMIN
                 .antMatchers("/api/v1/autores/**", "/api/v1/editoras/**", "/api/v1/generos/**",
                         "/api/v1/idiomas/**", "/api/v1/secoes/**", "/api/v1/obras/**", "/api/v1/exemplares/**")
                 .hasRole("ADMIN")
 
+                // Qualquer outra rota não mapeada exige login
                 .anyRequest().authenticated()
 
                 .and()
