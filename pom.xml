@@ -11,8 +11,8 @@
 	<groupId>com.example</groupId>
 	<artifactId>demo</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>sistemaBiblioteca</name>
-	<description>Sistema de Biblioteca project for Spring Boot</description>
+	<name>sistemaKanban</name>
+	<description>Sistema de Gestao de Tarefas Kanban for Spring Boot</description>
 	<url/>
 	<licenses>
 		<license/>

@@ -1,0 +1,14 @@
+package br.edu.ifsudestemg.kb.model.repository;
+
+import br.edu.ifsudestemg.kb.model.entity.DuracaoPadraoReserva;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
+
+public interface DuracaoPadraoReservaRepository
+        extends JpaRepository<DuracaoPadraoReserva, Long> {
+
+    Optional<DuracaoPadraoReserva>
+    findTopByOrderByIdDesc();
+
+}
