@@ -1,0 +1,120 @@
+package br.edu.ifsudestemg.sb.api.controller;
+
+import br.edu.ifsudestemg.sb.api.dto.StatusExemplarDTO;
+import br.edu.ifsudestemg.sb.exception.RegraNegocioException;
+import br.edu.ifsudestemg.sb.model.entity.StatusExemplar;
+import br.edu.ifsudestemg.sb.service.StatusExemplarService;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+@RestController
+@RequestMapping("/api/v1/statusExemplares")
+@CrossOrigin
+public class StatusExemplarController {
+
+    private StatusExemplarService service;
+
+    public StatusExemplarController(
+            StatusExemplarService service) {
+        this.service = service;
+    }
+
+    @GetMapping()
+    @ApiOperation("Obter status de exemplares")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Status de exemplares encontrados"),
+            @ApiResponse(code = 404, message = "Status de exemplares não encontrados")
+    })
+    public ResponseEntity get() {
+        List<StatusExemplar> statusExemplares = service.getStatusExemplares();
+        return ResponseEntity.ok(statusExemplares.stream().map(StatusExemplarDTO::create).collect(Collectors.toList()));
+    }
+
+    @GetMapping("/{id}")
+    @ApiOperation("Obter detalhes de um status exemplar")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Status exemplar encontrado"),
+            @ApiResponse(code = 404, message = "Status exemplar não encontrado")
+    })
+    public ResponseEntity get(@PathVariable("id") Long id) {
+        Optional<StatusExemplar> statusExemplar = service.getStatusExemplarById(id);
+        if (!statusExemplar.isPresent()) {
+            return new ResponseEntity("Status exemplar não encontrado", HttpStatus.NOT_FOUND);
+        }
+        return ResponseEntity.ok(statusExemplar.map(StatusExemplarDTO::create));
+    }
+    @PostMapping()
+    @ApiOperation("Salva um novo status exemplar")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Status exemplar salvo com sucesso"),
+            @ApiResponse(code = 400, message = "Erro ao salvar o status exemplar")
+    })
+    public ResponseEntity post(
+            @RequestBody StatusExemplarDTO dto) {
+        try {
+            StatusExemplar statusExemplar = converter(dto);
+            statusExemplar = service.salvar(statusExemplar);
+            return new ResponseEntity(StatusExemplarDTO.create(statusExemplar), HttpStatus.CREATED);
+        } catch (RegraNegocioException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/{id}")
+    @ApiOperation("Atualizar o status do exemplar")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "Status do exemplar atualizado com sucesso"),
+            @ApiResponse(code = 400, message = "Erro ao atualizar o status do exemplar")
+    })
+    public ResponseEntity atualizar(
+            @PathVariable("id") Long id,
+            @RequestBody StatusExemplarDTO dto) {
+
+        if (!service.getStatusExemplarById(id).isPresent()) {
+            return new ResponseEntity(
+                    "Status exemplar não encontrado", HttpStatus.NOT_FOUND);
+        }
+        try {
+            StatusExemplar statusExemplar = converter(dto);
+            statusExemplar.setId(id);
+            statusExemplar = service.salvar(statusExemplar);
+            return ResponseEntity.ok(StatusExemplarDTO.create(statusExemplar));
+        } catch (RegraNegocioException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    @ApiOperation("Deleta um status de exemplar")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Status de exemplar deletado"),
+            @ApiResponse(code = 404, message = "Status de exemplar não deletado")
+    })
+    public ResponseEntity excluir(
+            @PathVariable("id") Long id) {
+        Optional<StatusExemplar> statusExemplar = service.getStatusExemplarById(id);
+        if (!statusExemplar.isPresent()) {
+            return new ResponseEntity("Status exemplar não encontrado", HttpStatus.NOT_FOUND);
+        }
+        try {
+            service.excluir(statusExemplar.get());
+            return new ResponseEntity(HttpStatus.NO_CONTENT);
+        } catch (RegraNegocioException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    public StatusExemplar converter(StatusExemplarDTO dto) {
+        ModelMapper modelMapper = new ModelMapper();
+        return modelMapper.map(dto, StatusExemplar.class);
+    }
+}
